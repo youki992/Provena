@@ -15,9 +15,10 @@ writes a report you can hand to a reviewer.
 Written in Go, it combines an Eino-powered agent, MCP-native tools, RAG knowledge and
 attack-chain modelling for authorized security operations.
 
-**This repository ships the CLI only.** There is no web console and nothing ever binds a
-port: the binary has no `serve` command, registers no HTTP routes, and keeps all output on
-the terminal.
+**This repository ships the CLI only.** There is no web console and no HTTP server: the
+binary has no `serve` command and registers no routes. The only socket a run opens is an
+ephemeral loopback port on `127.0.0.1` that the built-in Pi bridge uses to hand tool calls
+to the agent; nothing listens on an external interface.
 
 > [!IMPORTANT]
 > Use Provena only on systems you own or are explicitly authorized to test.
@@ -46,7 +47,7 @@ mirrored by the `version` field in `config.example.yaml`. Confirm the build:
 
 ```bash
 ./provena version     # provena v0.1.0
-./provena help        # command list; no serve, no port
+./provena help        # command list; there is no serve command
 ```
 
 ## Quick start

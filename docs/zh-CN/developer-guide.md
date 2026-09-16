@@ -94,30 +94,6 @@ max_iterations: 200
 
 Skill 放在 `skills/<name>/SKILL.md`。用于提供专题能力、流程说明或附属资料。详见 [Skills 指南](skills-guide.md)。
 
-## 前端开发
-
-前端代码按功能拆分在 `web/static/js/`。新增页面或模块时：
-
-- 复用现有 `apiFetch`、modal、通知、i18n 工具。
-- 同步更新 `web/static/i18n/zh-CN.json` 和 `en-US.json`。
-- 避免把敏感 Key 放到前端。
-- 高风险按钮要有确认和清晰状态反馈。
-
-i18n 规范见 [前端国际化方案](frontend-i18n.md)。
-
-## OpenAPI
-
-`internal/handler/openapi.go` 维护内置 OpenAPI 输出。新增公开接口后建议同步补：
-
-- path
-- method
-- summary/description
-- requestBody
-- responses
-- security
-
-这样 `/api-docs` 才能反映最新接口。
-
 ## 开发习惯
 
 - 优先保持现有模块边界。

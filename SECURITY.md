@@ -73,7 +73,6 @@ See:
 
 - [Security Model](docs/en-US/security-model.md)
 - [Security Hardening](docs/en-US/security-hardening.md)
-- [Runbooks](docs/en-US/runbooks.md)
 
 ---
 
@@ -148,4 +147,3 @@ Shell 执行、WebShell 管理、C2、payload 生成、外部 MCP 工具、批�
 
 - [安全模型](docs/zh-CN/security-model.md)
 - [安全加固指南](docs/zh-CN/security-hardening.md)
-- [运维 Runbooks](docs/zh-CN/runbooks.md)

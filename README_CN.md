@@ -14,8 +14,9 @@ Provena 把一句自然语言目标，转化为针对单个授权目标的有界
 项目以 Go 编写，融合 Eino 智能体、MCP 原生工具、RAG 知识与攻击链建模，面向已获得明确
 授权的安全任务。
 
-**本仓库只包含命令行功能。** 没有 Web 控制台，也不会绑定任何端口：二进制中没有 `serve`
-子命令、不注册任何 HTTP 路由，所有输出都留在终端。
+**本仓库只包含命令行功能。** 没有 Web 控制台，也没有 HTTP 服务：二进制中没有 `serve`
+子命令、不注册任何路由。运行期唯一会打开的套接字，是内置 Pi 桥在 `127.0.0.1` 上绑定的
+一个临时回环端口，用于把工具调用交给智能体；不会监听任何对外网卡。
 
 > [!IMPORTANT]
 > 仅可对自有系统或已获得明确授权的目标使用 Provena。
@@ -44,7 +45,7 @@ go build -o provena.exe ./cmd/provena    # Windows
 
 ```bash
 ./provena version     # provena v0.1.0
-./provena help        # 命令列表；没有 serve，不占用端口
+./provena help        # 命令列表；没有 serve 子命令
 ```
 
 ## 快速上手

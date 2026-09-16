@@ -2,31 +2,35 @@
 
 [Documentation home](../README.md) | [中文](../zh-CN/README.md)
 
+Provena is a command-line tool. These documents cover building it, configuring it, running
+it safely and extending it.
+
+> Topics that belonged to the former web console — the HTTP API, platform RBAC
+> administration, the WebShell and C2 consoles, the visual workflow editor, chatbot
+> integrations and the Burp/browser plugins — are not part of this build, and their
+> documents have been removed along with it.
+
 ## Choose a path
 
-- **Try locally**: [Deployment](deployment.md) → [Configuration](configuration.md) → [Troubleshooting](troubleshooting.md)
-- **Run in production**: [Configuration Profiles](configuration-profiles.md) → [Security Hardening](security-hardening.md) → [Runbooks](runbooks.md) → [Audit and Monitoring](audit-and-monitoring.md)
-- **Integrate and automate**: [API Reference](api-reference.md) → [API Recipes](api-recipes.md) → [MCP Federation](mcp-federation.md)
+- **Get running**: [Configuration](configuration.md) → [Troubleshooting](troubleshooting.md)
+- **Run it safely**: [Configuration Profiles](configuration-profiles.md) → [Security Hardening](security-hardening.md)
 - **Contribute code**: [Developer Guide](developer-guide.md) → [Testing](testing.md) → [Contributing](contributing-guide.md)
 
 ## Concepts and orchestration
 
-- [Architecture](architecture.md) · [Security Model](security-model.md) · [RBAC](rbac.md)
+- [Architecture](architecture.md) · [Security Model](security-model.md)
 - [Agents and Roles](agent-and-role-guide.md) · [Skills](skills-guide.md) · [Eino Multi-Agent](MULTI_AGENT_EINO.md)
-- [Workflows](workflow-graph.md) · [Tool Execution Governance](tool-execution-governance.md) · [HITL Best Practices](hitl-best-practices.md)
+- [Tool Execution Governance](tool-execution-governance.md) · [HITL Best Practices](hitl-best-practices.md)
 
 ## Feature guides
 
-- [Asset Management](asset-management.md) · [Knowledge Base](knowledge-base.md) · [Robot / Chatbot](robot.md) · [Vision](VISION.md)
-- [WebShell](webshell.md) · [C2](c2.md) · [MCP Federation](mcp-federation.md)
+- [Knowledge Base](knowledge-base.md) · [Vision Analysis](VISION.md) · [MCP Federation](mcp-federation.md)
 
-## Operations and reference
+## Reference
 
-- [Deployment](deployment.md) · [Configuration](configuration.md) · [Configuration Profiles](configuration-profiles.md)
-- [Security Hardening](security-hardening.md) · [Audit and Monitoring](audit-and-monitoring.md) · [Runbooks](runbooks.md)
-- [API Reference](api-reference.md) · [API Recipes](api-recipes.md) · [Troubleshooting](troubleshooting.md)
+- [Configuration](configuration.md) · [Configuration Profiles](configuration-profiles.md)
+- [Security Hardening](security-hardening.md) · [Troubleshooting](troubleshooting.md)
 
-## Development and release
+## Development
 
-- [Developer Guide](developer-guide.md) · [Plugin Development](plugin-development.md) · [Frontend i18n](frontend-i18n.md)
-- [Testing](testing.md) · [Contributing](contributing-guide.md) · [Release Process](release-process.md)
+- [Developer Guide](developer-guide.md) · [Testing](testing.md) · [Contributing](contributing-guide.md)

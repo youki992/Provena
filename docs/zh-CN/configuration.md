@@ -289,7 +289,7 @@ project:
 
 ## 机器人
 
-`robots` 支持个人微信 iLink、企业微信、钉钉、飞书、Telegram、Slack、Discord、QQ。详细配置步骤见 [机器人使用说明](robot.md)。
+`robots` 支持个人微信 iLink、企业微信、钉钉、飞书、Telegram、Slack、Discord、QQ。
 
 ## 配置修改建议
 

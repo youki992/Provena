@@ -145,8 +145,6 @@ Do not produce a final answer until verification is complete.
 - [internal/agentfinalizer/decision.go](../../internal/agentfinalizer/decision.go) 是唯一的最终回复决策契约。
 - [internal/handler/finalization_helpers.go](../../internal/handler/finalization_helpers.go) 负责把决策结果写入 `process_details`，并且只有 `Finalizable=true` 时才调用 `UpdateAssistantMessageFinalize`。
 - [internal/handler/eino_single_agent.go](../../internal/handler/eino_single_agent.go)、[internal/handler/multi_agent.go](../../internal/handler/multi_agent.go)、[internal/handler/workflow_integration.go](../../internal/handler/workflow_integration.go)、[internal/handler/batch_queue_executor.go](../../internal/handler/batch_queue_executor.go) 均已在收尾处接入 finalizer。
-- [web/static/js/monitor.js](../../web/static/js/monitor.js) 只把 `data.finalized === true` 的 `response` 当最终回复；未最终化文本会显示为最终回复检查未通过。
-- [web/static/js/webshell.js](../../web/static/js/webshell.js) 将流式正文标记为候选输出，只有 `response(finalized=true)` 才切换为完成态。
 - [internal/agentfinalizer/decision_test.go](../../internal/agentfinalizer/decision_test.go) 覆盖 pending tool、HITL、空输出、证据策略要求但缺执行证据、失败证据不能支撑最终化、完成态证据可 final 等回归场景。
 - [internal/handler/finalization_auto_continue.go](../../internal/handler/finalization_auto_continue.go) 在缺 completed 执行证据时最多自动续跑 2 段；续跑只恢复已有模型轨迹，不向 agent 注入新的 user/system 文案。
 
@@ -228,21 +226,7 @@ if !decision.Finalizable {
 sendEvent("response", decision.FinalText, finalizationResponsePayload(decision, extra))
 ```
 
-### 4. 前端只信 `finalized=true`
-
-在 [web/static/js/monitor.js](../../web/static/js/monitor.js) 的 `case 'response'` 中执行硬判断：
-
-```js
-const responseFinalized = isFinalizedResponseData(responseData);
-const bubbleText = responseFinalized
-  ? resolvedResponseText
-  : (event.message || '任务尚未达到最终回复条件，暂不生成成功结论。');
-markAssistantFinalizationState(assistantIdFinal, responseData);
-```
-
-WebShell 侧同理：`response_delta` 可以用于实时预览，但 UI 文案应标记为“执行中输出”，只有最终 `response(finalized=true)` 才显示为完成态。
-
-### 5. 各模式 final gate
+### 4. 各模式 final gate
 
 | 模式 | 谁可以产出最终候选 | 谁决定 final | 必须检查 |
 |---|---|---|---|
@@ -251,7 +235,7 @@ WebShell 侧同理：`response_delta` 可以用于实时预览，但 UI 文案�
 | Plan-Execute | Replanner 结束后的汇总文本 | Replanner + Finalizer | Executor 单步输出不能 final；计划步骤完成或明确 blocked |
 | Supervisor | Supervisor 的 `exit` / 汇总文本 | Supervisor + Finalizer | transfer 已返回；无未处理专家结果；最终由 supervisor 统一口径 |
 
-### 6. 安全测试场景的证据 gate
+### 5. 安全测试场景的证据 gate
 
 安全测试、WebShell、批量验证、Workflow 和多代理执行等 evidence-required 场景，最终回复必须至少满足：
 
@@ -270,7 +254,7 @@ WebShell 侧同理：`response_delta` 可以用于实时预览，但 UI 文案�
 
 1. 已引入 `FinalizationDecision`。
 2. 主要 agent SSE `response` 事件已携带 `data.finalized/finalizable/status/completionReason` 等字段。
-3. 前端 `monitor.js` 和 `webshell.js` 已按 `finalized=true` 区分候选输出和最终回复。
+3. 消费方只把 `finalized=true` 的 `response` 当最终回复，其余按候选输出处理。
 4. `RunResult.Response` 仍保留兼容字段名，但语义已由 finalizer 统一提升；后续可再拆成 `CandidateResponse` / `FinalResponse`，减少误用空间。
 5. Plan-Execute / Deep / Supervisor / Eino Single 等模式均通过统一 handler 收尾 gate。
 
@@ -308,7 +292,7 @@ WebShell 侧同理：`response_delta` 可以用于实时预览，但 UI 文案�
    子代理返回确定结论，Supervisor 未 `exit`；预期只进入 `eino_agent_reply`。
 
 6. **最终事件必须带 finalized**
-   前端收到旧格式 `response` 无 `finalized=true`；预期候选内容只进入详情/警告，主消息显示阻断态，不创建成功最终气泡。
+   收到旧格式 `response` 无 `finalized=true`；预期候选内容只进入详情/警告，不产生成功最终结论。
 
 7. **失败和取消可终态**
    `error` / `cancelled` 仍可更新助手消息，但 `completionReason` 必须是 `failed` / `user_cancelled`，不能伪装为成功完成。
@@ -329,5 +313,5 @@ supervisor：多专家路由任务使用，不作为默认泛化模式
 ```text
 messages.content 只能来自 FinalizationDecision.FinalText；
 process_details 可以展示所有过程；
-前端只能把 response(finalized=true) 当最终回复。
+只能把 response(finalized=true) 当最终回复。
 ```

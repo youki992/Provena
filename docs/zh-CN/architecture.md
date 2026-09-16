@@ -74,9 +74,7 @@ MCP 相关：
 
 ## Workflow
 
-工作流引擎在 `internal/workflow/`，HTTP 入口在 `internal/handler/workflow*.go`。它支持 start、agent、tool、condition、hitl、output、end 等节点。
-
-详细使用见 [工作流使用说明](workflow-graph.md)。
+工作流引擎在 `internal/workflow/`。它支持 start、agent、tool、condition、hitl、output、end 等节点。
 
 ## 知识库
 
