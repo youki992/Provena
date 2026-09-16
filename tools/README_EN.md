@@ -493,6 +493,5 @@ parameters:
 
 ## Related Documents
 
-- Main project README: see `README.md` in the project root.
+- Main project README: `README.md` (中文) or `README_EN.md` (English) in the project root.
 - Tool list: all YAML configs under `tools/`.
-- API: see the main README for API details.

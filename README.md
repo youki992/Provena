@@ -2,42 +2,40 @@
 
 # Provena
 
-**Evidence-driven security testing agent — headless CLI.**
+**证据驱动的安全测试智能体 —— 无头命令行版本。**
 
 </div>
 
-[中文](README_CN.md) | [English](README.md)
+[中文](README.md) | [English](README_EN.md)
 
-Provena turns a natural-language objective into a bounded, auditable security test against
-one authorized target. A run drives the Pi harness through a fact/intent graph: the model
-decides what to do next, Provena executes the tools, and every observation is recorded in an
-append-only graph that is replayed into the report.
+Provena 把一句自然语言目标，转化为针对单个授权目标的有界、可审计安全测试。一次运行会
+驱动 Pi harness 走一条 fact/intent 图：模型决定下一步做什么，Provena 负责执行工具，每一
+条观察都记录进只追加的图里，最终回放成报告。
 
-It is written in Go and ships as a single binary. Tools are declared as YAML recipes and
-reached over MCP, so the same agent can call a local scanner, a remote MCP server or one of
-Provena's built-in helpers.
+项目以 Go 编写，产出单个二进制。工具以 YAML 配方声明、通过 MCP 调用，因此同一个智能体
+既能调用本地扫描器，也能调用远端 MCP 服务或 Provena 内置工具。
 
-This repository is the command-line tool: `chat`, `run`, `doctor`, `init`, `config` and
-`version`.
+本仓库是命令行工具：`chat`、`run`、`doctor`、`init`、`config`、`version`。
 
 > [!IMPORTANT]
-> Use Provena only on systems you own or are explicitly authorized to test.
-> See [SECURITY.md](SECURITY.md).
+> 仅可对自有系统或已获得明确授权的目标使用 Provena。
+> 详见 [SECURITY.md](SECURITY.md)。
 
-## Requirements
+## 环境要求
 
 | | |
 | --- | --- |
-| **OS** | 64-bit Windows or Linux. The bundled-scanner launcher (`tools/bundled_tool.py`) has no macOS path, so the eight tools it starts only run on those two platforms. |
-| **Go** | 1.25 or newer (see `go.mod`) |
-| **Pi** | the `pi` CLI on `PATH`. Provena drives it as the agent runtime (`pi --mode rpc`); set `pi_agent.command` to use a different executable. |
-| **Model** | any OpenAI-compatible chat endpoint. Provena hands the selected channel's `provider`, `base_url`, `api_key` and `model` to Pi, so configure it under `ai.channels`. |
-| **Python** | 3.10 or newer — needed by the Python-backed recipes and by the bundled-scanner launcher |
+| **操作系统** | 64 位 Windows 或 Linux。内置扫描器启动器（`tools/bundled_tool.py`）没有 macOS 分支，它拉起的 8 个工具只在上述两个平台可用。 |
+| **Go** | 1.25 及以上（以 `go.mod` 为准） |
+| **Node.js + npm** | 用于安装并运行 Pi（见下一行） |
+| **Pi** | `pi` 命令行工具，需在 `PATH` 中。安装：`npm install -g @mariozechner/pi-coding-agent`。Provena 把它作为智能体运行时驱动（`pi --mode rpc`）；可用 `pi_agent.command` 指向其他可执行文件。 |
+| **模型** | 任意兼容 OpenAI 协议的对话接口。Provena 会把所选通道的 `provider`、`base_url`、`api_key`、`model` 交给 Pi，因此在 `ai.channels` 里配置。 |
+| **Python** | 3.10 及以上 —— Python 类配方和内置扫描器启动器都需要 |
 
-`provena doctor` checks the config, the AI channel, the pi runtime, python, the
-tools/skills/agents directories and every configured MCP server before a run does any work.
+`provena doctor` 会在真正跑任务前，把配置、AI 通道、pi 运行时、python、tools/skills/agents
+目录以及所有已配置的 MCP 服务器都检查一遍。
 
-## Build
+## 构建
 
 ```bash
 git clone https://github.com/youki992/Provena.git
@@ -47,21 +45,21 @@ go build -o provena ./cmd/provena        # Linux
 go build -o provena.exe ./cmd/provena    # Windows
 ```
 
-The current version is **v0.1.0**, the default compiled into `cmd/provena/main.go` and
-mirrored by the `version` field in `config.example.yaml`. Confirm the build:
+当前版本为 **v0.1.0**，即 `cmd/provena/main.go` 里的默认值，与 `config.example.yaml` 的
+`version` 字段保持一致。构建完成后可自行确认：
 
 ```bash
 ./provena version     # provena v0.1.0
-./provena help        # command list; there is no serve command
+./provena help        # 命令列表；没有 serve 子命令
 ```
 
-## Quick start
+## 快速上手
 
 ```bash
-./provena init            # writes config.yaml from config.example.yaml
+./provena init            # 由 config.example.yaml 生成 config.yaml
 ```
 
-Then point one AI channel at your model:
+然后在 `config.yaml` 中配置一个 AI 通道：
 
 ```yaml
 ai:
@@ -75,147 +73,141 @@ ai:
 ```
 
 ```bash
-./provena doctor          # validate config, credentials, python and MCP wiring
-./provena run -t https://example.com --objective "review the login flow"
+./provena doctor          # 校验配置、模型凭证、python 与 MCP 接线
+./provena run -t https://example.com --objective "复查登录流程"
 ```
 
-`provena doctor` and `provena run --dry-run` resolve the whole wiring without calling the
-model. Use them before spending tokens.
+`provena doctor` 与 `provena run --dry-run` 都会在不调用模型的前提下完整解析接线关系，
+建议在消耗 token 之前先用它们自检。
 
-## Commands
+## 命令一览
 
-| Command | Purpose |
+| 命令 | 作用 |
 | --- | --- |
-| `provena chat` | Interactive multi-turn session; interruptible and resumable |
-| `provena run` | Bounded, headless test against one target |
-| `provena doctor` | Check config, model credentials, pi, python and MCP servers |
-| `provena init` | Create `config.yaml` from the bundled example |
-| `provena config validate` | Validate the configuration file |
-| `provena version` | Print the version |
+| `provena chat` | 交互式多轮会话，可打断、可恢复 |
+| `provena run` | 针对单个目标的有界无头测试 |
+| `provena doctor` | 检查配置、模型凭证、pi、python 与 MCP 服务器 |
+| `provena init` | 由内置示例生成 `config.yaml` |
+| `provena config validate` | 校验配置文件 |
+| `provena version` | 打印版本号 |
 
-Every command accepts `-config <path>` (default `config.yaml`).
+所有命令都支持 `-config <path>`（默认 `config.yaml`）。
 
-## Interactive sessions
+## 交互式会话
 
-`provena chat` keeps a single Pi process alive for the whole conversation, so the model sees
-the previous turns, and the session can be interrupted and resumed:
+`provena chat` 在整个对话期间只保持一个 Pi 进程，因此模型能看到之前的轮次，会话也可以
+随时打断与恢复：
 
 ```bash
-provena chat -t https://example.com --objective "review the login flow"
-provena chat --continue        # reopen the most recent session
+provena chat -t https://example.com --objective "复查登录流程"
+provena chat --continue        # 接着最近一次会话继续
 ```
 
-| In-session command | Purpose |
+| 会话内命令 | 作用 |
 | --- | --- |
-| `/new` | Clear the conversation and rotate the FGS graph |
-| `/graph` | Print the current FGS graph |
-| `/info` | Session id, message count and Pi session file |
-| `/help`, `/exit` | Command list, leave the session |
+| `/new` | 清空对话，并把 FGS 图轮换到新文件 |
+| `/graph` | 打印当前 FGS 图 |
+| `/info` | 显示会话 id、消息数与 Pi 的 session 文件 |
+| `/help`、`/exit` | 命令列表、退出 |
 
-The first `Ctrl+C` aborts the running turn and keeps the conversation; the second leaves.
-State lives in `data/sessions/<id>/`.
+第一次 `Ctrl+C` 中止当前轮并保留对话，第二次才退出。会话状态保存在 `data/sessions/<id>/`。
 
-## Headless runs
+## 无头运行
 
-`provena run` drives the same agent core as `chat`, without a prompt loop:
+`provena run` 复用与 `chat` 相同的智能体内核，只是不再有交互提示：
 
 ```bash
 provena run -t https://example.com \
-  --objective "find access-control issues in the API" \
+  --objective "检查 API 的访问控制问题" \
   --scope https://example.com \
   --max-activities 6 \
   --format sarif
 ```
 
-| Flag | Purpose |
+| 参数 | 作用 |
 | --- | --- |
-| `-t`, `-target` | **Required.** Target URL, host or host:port. |
-| `--objective` | What the run should achieve; defaults to a general low-impact assessment. |
-| `--scope` | Comma-separated authorized scope; defaults to the target. |
-| `--max-activities` | Upper bound on model activities (default 6). |
-| `--format` | Report printed to stdout: `md` (default), `json` or `sarif`. |
-| `-as` | Platform user whose RBAC permissions the run uses (default `admin`). |
-| `--dry-run` | Resolve and validate all wiring without calling the model. |
-| `-v` | Print tool results as well as tool names. |
+| `-t`、`-target` | **必填。**目标 URL、主机或 host:port。 |
+| `--objective` | 本次运行要达成的目标；默认做一次通用低影响评估。 |
+| `--scope` | 逗号分隔的授权范围；默认等于目标。 |
+| `--max-activities` | 模型活动轮数上限（默认 6）。 |
+| `--format` | 输出到 stdout 的报告格式：`md`（默认）、`json` 或 `sarif`。 |
+| `-as` | 本次运行使用的 RBAC 用户（默认 `admin`）。 |
+| `--dry-run` | 只解析并校验全部接线，不调用模型。 |
+| `-v` | 除工具名外还打印工具结果。 |
 
-Each run writes to `data/runs/<run-id>/`:
+每次运行写入 `data/runs/<run-id>/`：
 
-- `graph.jsonl` — the append-only Fact/Intent Graph (the run's durable state)
-- `report.md`, `report.json`, `report.sarif` — findings, evidence and severity
+- `graph.jsonl` —— 只追加的 Fact/Intent 图（运行的持久状态）
+- `report.md`、`report.json`、`report.sarif` —— 发现、证据与严重程度
 
-Findings recorded here are evidence-backed observations, not automatically confirmed
-vulnerabilities; verify them before acting.
+报告中记录的 Finding 是「有证据支持的观察」，不等于已确认漏洞，请先验证再处置。
 
-## Tools
+## 工具
 
-### Nothing is bundled — download the scanners yourself
+### 仓库不内置任何工具，请自行下载
 
-This repository deliberately ships **no third-party scanner binaries and no `tools/bin`
-directory**. Download the tools you want from their own upstream release pages and put them
-where Provena looks for them.
+本仓库刻意**不携带任何第三方扫描器二进制，也没有 `tools/bin` 目录**。请到各工具自己的
+上游 Release 页面下载，然后放到 Provena 约定的位置。
 
-Tool behaviour, the YAML schema and how to add your own are documented in
-[tools/README.md](tools/README.md) (Chinese) and
-[tools/README_EN.md](tools/README_EN.md) (English).
+工具的运行方式、YAML 配置格式以及如何新增自定义工具，见
+[tools/README.md](tools/README.md)（中文）与
+[tools/README_EN.md](tools/README_EN.md)（英文）。
 
-### Bundled scanners — `tools/bin/<tool>/<platform>/<tool>[.exe]`
+### 内置扫描器 —— `tools/bin/<工具名>/<平台>/<工具名>[.exe]`
 
-Eight tools are launched through [`tools/bundled_tool.py`](tools/bundled_tool.py), which
-resolves the executable **inside the repository** rather than from `PATH`. Place each
-binary at:
+下列 8 个工具由 [`tools/bundled_tool.py`](tools/bundled_tool.py) 拉起，它在**仓库内部**
+解析可执行文件，而不走 `PATH`。请把二进制放到：
 
 ```
-tools/bin/<tool>/<platform>/<tool>[.exe]
+tools/bin/<工具名>/<平台>/<工具名>[.exe]
 ```
 
-where `<platform>` is `windows-amd64` on Windows and `linux-amd64` on Linux.
+其中 `<平台>` 在 Windows 上是 `windows-amd64`，在 Linux 上是 `linux-amd64`。
 
-| Tool | Definition | Expected path | Upstream |
+| 工具 | 定义文件 | 期望路径 | 上游来源 |
 | --- | --- | --- | --- |
-| `amass` | `tools/amass.yaml` | `tools/bin/amass/<platform>/amass[.exe]` | `owasp-amass/amass` |
-| `subfinder` | `tools/subfinder.yaml` | `tools/bin/subfinder/<platform>/subfinder[.exe]` | `projectdiscovery/subfinder` |
-| `ffuf` | `tools/ffuf.yaml` | `tools/bin/ffuf/<platform>/ffuf[.exe]` | `ffuf/ffuf` |
-| `gau` | `tools/gau.yaml` | `tools/bin/gau/<platform>/gau[.exe]` | `lc/gau` |
-| `katana` | `tools/katana.yaml` | `tools/bin/katana/<platform>/katana[.exe]` | `projectdiscovery/katana` |
-| `waybackurls` | `tools/waybackurls.yaml` | `tools/bin/waybackurls/<platform>/waybackurls[.exe]` | `tomnomnom/waybackurls` |
-| `nmap` | `tools/nmap.yaml` | not a drop-in binary — see below | install it |
-| `dddd` | `tools/dddd.yaml` | `tools/bin/dddd/<platform>/dddd[.exe]` | not publicly distributed |
+| `amass` | `tools/amass.yaml` | `tools/bin/amass/<平台>/amass[.exe]` | `owasp-amass/amass` |
+| `subfinder` | `tools/subfinder.yaml` | `tools/bin/subfinder/<平台>/subfinder[.exe]` | `projectdiscovery/subfinder` |
+| `ffuf` | `tools/ffuf.yaml` | `tools/bin/ffuf/<平台>/ffuf[.exe]` | `ffuf/ffuf` |
+| `gau` | `tools/gau.yaml` | `tools/bin/gau/<平台>/gau[.exe]` | `lc/gau` |
+| `katana` | `tools/katana.yaml` | `tools/bin/katana/<平台>/katana[.exe]` | `projectdiscovery/katana` |
+| `waybackurls` | `tools/waybackurls.yaml` | `tools/bin/waybackurls/<平台>/waybackurls[.exe]` | `tomnomnom/waybackurls` |
+| `nmap` | `tools/nmap.yaml` | 不是「丢一个文件进去」就完事 —— 见下文 | 自行安装 |
+| `dddd` | `tools/dddd.yaml` | `tools/bin/dddd/<平台>/dddd[.exe]` | 未公开分发 |
 
-The first six are ordinary open-source releases: grab the archive for your platform from the
-project's release page and copy the executable to the path above. For example, on Linux:
+前 6 个都是常见的开源 Release：到对应项目的 Release 页面下载你的平台包，把可执行文件拷到
+上面的路径即可。以 Linux 上的 ffuf 为例：
 
 ```bash
 mkdir -p tools/bin/ffuf/linux-amd64
-# unpack the ffuf release archive, then
+# 解压 ffuf 的 Release 包，然后
 cp ffuf tools/bin/ffuf/linux-amd64/ffuf
 chmod +x tools/bin/ffuf/linux-amd64/ffuf
 ```
 
-The last two are different:
+后两个不一样：
 
-- **`nmap` is not something you drop in.** On Windows, install Nmap normally: the launcher
-  checks `%ProgramFiles%\Nmap\nmap.exe` and `%ProgramFiles(x86)%\Nmap\nmap.exe` before
-  `tools/bin/nmap/windows-amd64/nmap.exe`. On Linux the launcher only looks at
-  `tools/bin/nmap/linux-amd64/nmap`, so either copy the binary there or point the recipe at
-  your system install — set `command: "nmap"` and drop the `tools/bundled_tool.py` entries
-  from `args` in `tools/nmap.yaml`.
-- **`dddd` cannot be downloaded.** It is not publicly distributed, so there is no release to
-  link. Provena looks for `tools/bin/dddd/<platform>/dddd[.exe]` and simply skips the tool
-  unless you supply that binary yourself.
+- **`nmap` 不是可以直接丢进去的单个文件。** Windows 上请正常安装 Nmap：查找器会先看
+  `%ProgramFiles%\Nmap\nmap.exe` 和 `%ProgramFiles(x86)%\Nmap\nmap.exe`，再退回
+  `tools/bin/nmap/windows-amd64/nmap.exe`。Linux 上查找器只看
+  `tools/bin/nmap/linux-amd64/nmap`，所以要么把二进制拷到那里，要么改配方直接调用系统
+  安装的 nmap —— 在 `tools/nmap.yaml` 里把 `command` 改成 `"nmap"`，并去掉 `args` 中的
+  `tools/bundled_tool.py` 相关项。
+- **`dddd` 下载不到。** 它没有公开分发，所以给不出 Release 链接。Provena 会到
+  `tools/bin/dddd/<平台>/dddd[.exe]` 找它，找不到就跳过该工具 —— 除非你自己提供这个二进制。
 
-Resolution order and exceptions:
+查找顺序与例外：
 
-- **katana** — `tools/bin/dddd/<platform>/WIHscan-1.0/katana[.exe]` is also accepted.
-- **Legacy Windows layout** — `tools/bin/<tool>/<tool>.exe` still resolves.
-- **Missing binary** — the run does not fail. The tool reports every path it checked and the
-  agent continues without it.
+- **katana** —— 也接受 `tools/bin/dddd/<平台>/WIHscan-1.0/katana[.exe]`。
+- **旧版 Windows 布局** —— `tools/bin/<工具名>/<工具名>.exe` 仍然可以解析。
+- **二进制缺失** —— 运行不会失败。工具会列出它检查过的全部路径，智能体跳过该工具继续执行。
 
-`tools/bin` and `bin/` are git-ignored, so your downloads stay local and are never committed.
+`tools/bin` 与 `bin/` 都在 `.gitignore` 中，因此你下载的二进制只留在本地，不会被提交。
 
-### Python-backed tools
+### Python 类工具
 
-Several recipes call `python` / `python3` and are resolved against `PATH` (with `py` as a
-Windows fallback). Create a virtual environment and install the shared dependencies:
+部分配方调用 `python` / `python3`，按 `PATH` 解析（Windows 上回退到 `py`）。建议创建虚拟
+环境并安装共享依赖：
 
 ```bash
 python -m venv venv
@@ -223,88 +215,83 @@ source venv/bin/activate          # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-Tools such as `http-framework-test`, `api-fuzzer` and the ARL recipes expect this
-environment to be active.
+`http-framework-test`、`api-fuzzer` 以及 ARL 系列配方都期望该环境已激活。
 
-### Tools that expect a globally installed binary
+### 依赖全局安装的工具
 
-Most of the 100+ recipes in `tools/` call a command by name and expect it on `PATH` — nmap,
-nikto, sqlmap, nuclei, gobuster, hydra, hashcat and so on. Install them with your package
-manager or from upstream:
+`tools/` 里 100+ 个配方中的大多数按名称调用命令，期望它在 `PATH` 上 —— 例如 nmap、
+nikto、sqlmap、nuclei、gobuster、hydra、hashcat 等。请用包管理器或到上游安装：
 
 ```bash
-# Linux (Kali / Debian / Ubuntu)
+# Linux（Kali / Debian / Ubuntu）
 sudo apt install -y nmap sqlmap nikto gobuster hydra hashcat john binwalk
 ```
 
-On Windows there is no single package-manager line that covers them: install each tool from
-its own project, usually a signed installer or a release archive you unpack somewhere on
-`PATH`.
+Windows 上没有一条包管理器命令能覆盖它们：请逐个到各工具自己的项目页面安装，通常是签名
+安装包，或解压后放进 `PATH` 的 Release 包。
 
-Missing tools are skipped at runtime rather than failing the run.
+工具缺失时运行期会跳过，而不会让整次运行失败。
 
-## Configuration
+## 配置
 
-[`config.example.yaml`](config.example.yaml) is the authoritative template. At minimum,
-configure one AI channel as shown in [Quick start](#quick-start). Do not commit real
-credentials — `config.yaml` and `config.*.yaml` are git-ignored.
+[`config.example.yaml`](config.example.yaml) 是权威配置模板。最少只需按
+[快速上手](#快速上手)配置一个 AI 通道。不要提交真实凭证 —— `config.yaml` 与
+`config.*.yaml` 已在 `.gitignore` 中。
 
-`openai` is a backward-compatible runtime field; maintain new model settings under
-`ai.channels`. See the [configuration reference](docs/en-US/configuration.md) and the
-[security hardening guide](docs/en-US/security-hardening.md).
+`openai` 是兼容旧版本的运行时字段，新配置请统一维护在 `ai.channels` 下。详见
+[配置参考](docs/zh-CN/configuration.md)与[安全加固指南](docs/zh-CN/security-hardening.md)。
 
-## Project layout
+## 项目结构
 
 ```
 Provena/
-├── cmd/provena/     # CLI entrypoint (main, chat, run, doctor, init, config)
-├── internal/        # Agent core, FGS graph, MCP, tools, reports, security executor
-├── tools/           # YAML tool recipes + bundled_tool.py launcher
-├── roles/           # Role configurations (prompts + tool policy per scenario)
-├── agents/          # Multi-agent Markdown (orchestrator.md + sub-agents)
-├── docs/            # Topic documentation
-├── evals/           # Evaluation fixtures
+├── cmd/provena/     # CLI 入口（main、chat、run、doctor、init、config）
+├── internal/        # 智能体内核、FGS 图、MCP、工具、报告、安全执行器
+├── tools/           # YAML 工具配方 + bundled_tool.py 启动器
+├── roles/           # 角色配置（按场景的提示词与工具策略）
+├── agents/          # 多代理 Markdown（orchestrator.md + 子代理）
+├── docs/            # 专题文档
+├── evals/           # 评测样本
 ├── config.example.yaml
 └── SECURITY.md
 ```
 
-Directories you populate yourself and that are not part of the repository:
-`tools/bin/` (scanner binaries), `skills/` (Agent Skills), `mcp-servers/` (external MCP
-servers), `data/` (run state, database, sessions) and `config.yaml`.
+以下目录由你自行准备，不属于仓库内容：`tools/bin/`（扫描器二进制）、`skills/`
+（Agent Skills）、`mcp-servers/`（外部 MCP 服务）、`data/`（运行状态、数据库、会话）以及
+`config.yaml`。
 
-## Documentation
+## 相关文档
 
-- **Getting started:** [configuration](docs/en-US/configuration.md) → [troubleshooting](docs/en-US/troubleshooting.md)
-- **Architecture:** [architecture](docs/en-US/architecture.md) → [MCP federation](docs/en-US/mcp-federation.md)
-- **Security:** [security model](docs/en-US/security-model.md) → [security hardening](docs/en-US/security-hardening.md)
-- **Extending:** [skills guide](docs/en-US/skills-guide.md) → [tool execution governance](docs/en-US/tool-execution-governance.md)
-- **All topics:** [English documentation](docs/en-US/README.md) · [双语文档索引](docs/README.md)
+- **上手：** [配置参考](docs/zh-CN/configuration.md) → [排错指南](docs/zh-CN/troubleshooting.md)
+- **架构：** [架构说明](docs/zh-CN/architecture.md) → [MCP 联邦](docs/zh-CN/mcp-federation.md)
+- **安全：** [安全模型](docs/zh-CN/security-model.md) → [安全加固](docs/zh-CN/security-hardening.md)
+- **扩展：** [Skills 指南](docs/zh-CN/skills-guide.md) → [工具执行治理](docs/zh-CN/tool-execution-governance.md)
+- **全部专题：** [中文文档](docs/zh-CN/README.md) · [双语文档索引](docs/README.md)
 
-Some documents under `docs/` were written for the former web console and still describe
-screens that are not part of this build. Treat the CLI sections as authoritative.
+`docs/` 下部分文档是围绕此前的 Web 控制台撰写的，仍在描述本构建不具备的界面，请以其中的
+命令行章节为准。
 
-## License
+## 许可证
 
-Provena is licensed under the Apache License 2.0. See [LICENSE](LICENSE).
+Provena 采用 **Apache License 2.0** 开源许可。完整条款见 [LICENSE](LICENSE)。
 
 ---
 
-## Disclaimer
+## ⚠️ 免责声明
 
-**This tool is for educational and authorized testing purposes only.**
+**本工具仅供教育和授权测试使用！**
 
-Provena is a professional security testing tool designed to help security researchers,
-penetration testers and IT professionals conduct security assessments and vulnerability
-research **with explicit authorization**.
+Provena 是一个专业的安全测试工具，旨在帮助安全研究人员、渗透测试人员和 IT 专业人员
+在**获得明确授权**的前提下进行安全评估与漏洞研究。
 
-**By using this tool, you agree to:**
+**使用本工具即表示您同意：**
 
-- Use it only on systems for which you hold clear written authorization
-- Comply with all applicable laws, regulations and ethical standards
-- Take full responsibility for any unauthorized use or misuse
-- Never use it for illegal or malicious purposes
+- 仅在您拥有明确书面授权的系统上使用
+- 遵守所有适用的法律法规和道德准则
+- 对任何未经授权的使用或滥用行为承担全部责任
+- 不会将本工具用于任何非法或恶意目的
 
-**The developers are not responsible for any misuse.** Ensure your usage complies with
-local law and that you have obtained explicit authorization from the target system owner.
+**开发者不对任何滥用行为负责。** 请确保您的使用符合当地法律法规，并获得目标系统所有者
+的明确授权。
 
-For vulnerability reporting and hardening guidance, see [SECURITY.md](SECURITY.md).
+安全问题报告与加固建议见 [SECURITY.md](SECURITY.md)。
