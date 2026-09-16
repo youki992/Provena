@@ -1,7 +1,7 @@
 # provena 真实靶机冒烟（run / chat）
 
-`provena run` 是无头路径：不启浏览器、不启抓包代理、不启 C2，复用与控制台
-完全相同的智能体核心（同一套工具注册表、MCP 接线和 RBAC 记录）。本文是
+`provena run` 是无头路径：不启浏览器、不启抓包代理、不启 C2，复用同一套智能体核心
+（同一套工具注册表、MCP 接线和 RBAC 记录）。本文是
 "对已授权真实靶机跑一次端到端冒烟"的标准操作流程。
 
 同一条内核还有对话形态 `provena chat`（多轮上下文、可打断、可恢复），
@@ -12,38 +12,30 @@
 ## 0. 编译
 
 ```bash
-cd Provena-main
+cd Provena
 go build -o provena.exe ./cmd/provena      # Windows
-go build -o provena ./cmd/provena          # Linux/macOS
+go build -o provena ./cmd/provena          # Linux
 ```
 
 编译通过只说明入口与依赖没问题，不代表功能正确。
 
-### Web 控制台是可选构建
+### 只有这一种构建
 
-默认构建就是 CLI-only，不需要任何标签：
+Web 控制台已随 `web/`、`run.sh`、`upgrade.sh`、`deploy/` 一起从本仓库移除，`-tags webconsole`
+不再可用：
 
 ```bash
 go build -o provena.exe ./cmd/provena
 ```
 
-产物里没有 Web 控制台：`serve` 子命令被编译掉（`provena serve` 会直接报错并提示如何重建），
-`internal/app/routes.go` 那张 HTTP 路由表被**同签名的空实现**替换，所以**没有任何路由被注册**，
-也就不可能绑定端口。裸参数（`provena --https`）走的是同一条兼容分支，得到同样的报错。
+产物里没有控制台：`provena serve` 会直接报错，`internal/app/routes.go` 那张 HTTP 路由表也已删除，
+只剩同签名的空实现（`internal/app/routes_stub.go`），因此没有任何路由被注册。裸参数
+（`provena --https`）走同一条兼容分支，得到同样的报错。
 
-需要控制台时再加标签：
+注意 `internal/handler` 等包仍会被编译进去，因为共享内核（`app.New`）构造了它们；被移除的是
+「命令 + 路由表」这一层。
 
-```bash
-./build-web.sh                             # 等价于下面这行
-go build -tags webconsole -o provena-web.exe ./cmd/provena
-```
-
-`run` / `doctor` / `init` / `config` / `version` 在两种构建下**完全一致**。
-产物差约 3 MB（本机 66.4 MB → 69.2 MB）。注意 `internal/handler` 等包在两种构建里都会被
-编译进去，因为共享内核（`app.New`）构造了它们；真正的隔离点在「命令 + 路由表」这一层。
-
-`run.sh` 与 `deploy/*` 都是起控制台的，所以它们构建时带 `webconsole` 标签；
-只想要 CLI 就直接用二进制，别走 `run.sh`。
+`run` / `doctor` / `init` / `config` / `version` 不受影响。
 
 ## 1. 预检：doctor
 

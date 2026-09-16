@@ -19,7 +19,7 @@ it safely and extending it.
 ## Concepts and orchestration
 
 - [Architecture](architecture.md) · [Security Model](security-model.md)
-- [Agents and Roles](agent-and-role-guide.md) · [Skills](skills-guide.md) · [Eino Multi-Agent](MULTI_AGENT_EINO.md)
+- [Agents and Roles](agent-and-role-guide.md) · [Skills](skills-guide.md) · [Eino Orchestration and the CLI](MULTI_AGENT_EINO.md)
 - [Tool Execution Governance](tool-execution-governance.md) · [HITL Best Practices](hitl-best-practices.md)
 
 ## Feature guides

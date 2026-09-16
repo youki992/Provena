@@ -24,7 +24,7 @@ configuring, running and extending it.
 - [安全模型](zh-CN/security-model.md)
 - [Agent 与角色](zh-CN/agent-and-role-guide.md)
 - [Skills 指南](zh-CN/skills-guide.md)
-- [Eino 多代理](zh-CN/MULTI_AGENT_EINO.md)
+- [Eino 编排与命令行工具](zh-CN/MULTI_AGENT_EINO.md)
 - [Agent 最终回复治理](zh-CN/agent-finalization-best-practices.md)
 - [工具执行治理](zh-CN/tool-execution-governance.md)
 - [人机协同最佳实践](zh-CN/hitl-best-practices.md)
@@ -63,7 +63,7 @@ configuring, running and extending it.
 - [Security Model](en-US/security-model.md)
 - [Agents and Roles](en-US/agent-and-role-guide.md)
 - [Skills](en-US/skills-guide.md)
-- [Eino Multi-Agent](en-US/MULTI_AGENT_EINO.md)
+- [Eino Orchestration and the CLI](en-US/MULTI_AGENT_EINO.md)
 - [Tool Execution Governance](en-US/tool-execution-governance.md)
 - [HITL Best Practices](en-US/hitl-best-practices.md)
 

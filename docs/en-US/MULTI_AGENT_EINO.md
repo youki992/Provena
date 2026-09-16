@@ -1,66 +1,29 @@
-# Eino Multi-Agent Notes
+# Eino Orchestration and the CLI
 
 [中文](../zh-CN/MULTI_AGENT_EINO.md)
 
-Provena uses CloudWeGo Eino ADK for the current single-agent and multi-agent execution paths. The native legacy ReAct path has been removed.
+**Provena's command-line tool does not use Eino.**
 
-## Entrypoints
+`provena run` and `provena chat` drive the Pi harness. `internal/run` imports only
+`internal/piagent` and `internal/fgs`, and the model loop itself lives in the `pi` process.
+The `internal/agent` package the CLI hands to the tool bridge is the MCP/tool layer, and it
+has no Eino dependency at all.
 
-- Single-agent: `/api/eino-agent` and `/api/eino-agent/stream`
-- Multi-agent: `/api/multi-agent` and `/api/multi-agent/stream`
+The Eino single-agent and multi-agent orchestration — Deep, Plan-Execute and Supervisor —
+lives in `internal/multiagent`, `internal/einomcp` and `internal/einoobserve`. It is reached
+only through the console HTTP layer (`internal/handler`) and the web front end, neither of
+which this repository ships, so no command here can start it.
 
-Multi-agent orchestration is selected by request body:
+The `multi_agent` section still exists in `config.example.yaml` because the configuration
+file is shared with the server build. Setting it has no effect on the CLI.
 
-- `deep`
-- `plan_execute`
-- `supervisor`
+## Source anchors
 
-Robots default to `robot_default_agent_mode`, and batch tasks can opt into multi-agent through config.
+If you are working on that subsystem, the code is:
 
-## Agent Definitions
-
-Markdown agents live under `agents/`.
-
-Typical files:
-
-```text
-agents/orchestrator.md
-agents/orchestrator-plan-execute.md
-agents/orchestrator-supervisor.md
-agents/*.md
-```
-
-Front matter controls name, id, description, tools, bound role, max iterations, and optional orchestrator kind.
-
-## Middleware
-
-Important Eino middleware:
-
-- tool search: exposes a small visible tool set and unlocks others on demand;
-- patch tool calls: repairs interrupted histories;
-- plan task: structured task board;
-- reduction: truncates or persists large tool outputs;
-- summarization: compresses long contexts;
-- checkpoint: resume after crash/OOM.
-
-These settings live under `multi_agent.eino_middleware`.
-
-## Skills
-
-Eino Skills support progressive disclosure. The Agent initially sees names and descriptions; details are loaded only when needed through the configured skill tool.
-
-## Operational Notes
-
-- Tool visibility is not the same as tool availability in the UI.
-- Running streams keep their startup context even if config changes mid-run.
-- Summarization can write transcripts under `data/conversation_artifacts/...`.
-- High-risk tools should still be constrained by roles and HITL.
-
-## Source Anchors
-
-- Multi-agent handler: `internal/handler/multi_agent.go`
-- Preparation: `internal/handler/multi_agent_prepare.go`
-- Orchestration: `internal/multiagent/eino_orchestration.go`
-- Run loop: `internal/multiagent/eino_adk_run_loop.go`
-- Skills: `internal/multiagent/eino_skills.go`
-- Middleware: `internal/multiagent/eino_middleware.go`
+- `internal/multiagent/runner.go` — assembles Deep / Plan-Execute / Supervisor
+- `internal/multiagent/eino_orchestration.go` — PlanExecute root node and executor middleware
+- `internal/multiagent/eino_single_runner.go` — the single-agent Eino path
+- `internal/multiagent/eino_middleware.go` — the middleware stack
+- `internal/einomcp/` — MCP tools exposed to Eino
+- `internal/einoobserve/` — Eino observability callbacks

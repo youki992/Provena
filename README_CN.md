@@ -25,12 +25,14 @@ Provena 把一句自然语言目标，转化为针对单个授权目标的有界
 
 | | |
 | --- | --- |
+| **操作系统** | 64 位 Windows 或 Linux。内置扫描器启动器（`tools/bundled_tool.py`）没有 macOS 分支，它拉起的 8 个工具只在上述两个平台可用。 |
 | **Go** | 1.25 及以上（以 `go.mod` 为准） |
 | **Pi** | `pi` 命令行工具，需在 `PATH` 中。Provena 把它作为智能体运行时驱动（`pi --mode rpc`）；可用 `pi_agent.command` 指定其他可执行文件。 |
-| **模型** | 任意兼容 OpenAI 协议的对话接口 |
-| **Python** | 3.10 及以上 —— 仅 Python 类工具需要 |
+| **模型** | 任意兼容 OpenAI 协议的对话接口。Provena 会把所选通道的 `provider`、`base_url`、`api_key`、`model` 交给 Pi，因此在 `ai.channels` 里配置。 |
+| **Python** | 3.10 及以上 —— Python 类配方和内置扫描器启动器都需要 |
 
-`provena doctor` 会在真正跑任务前把这四项都检查一遍。
+`provena doctor` 会在真正跑任务前，把配置、AI 通道、pi 运行时、python、tools/skills/agents
+目录以及所有已配置的 MCP 服务器都检查一遍。
 
 ## 构建
 
@@ -38,7 +40,7 @@ Provena 把一句自然语言目标，转化为针对单个授权目标的有界
 git clone https://github.com/youki992/Provena.git
 cd Provena
 
-go build -o provena ./cmd/provena        # Linux / macOS
+go build -o provena ./cmd/provena        # Linux
 go build -o provena.exe ./cmd/provena    # Windows
 ```
 
@@ -220,12 +222,12 @@ pip install -r requirements.txt
 nikto、sqlmap、nuclei、gobuster、hydra、hashcat 等。请用包管理器或到上游安装：
 
 ```bash
-# macOS
-brew install nmap sqlmap nikto gobuster hydra hashcat nuclei
-
 # Linux（Kali / Debian / Ubuntu）
 sudo apt install -y nmap sqlmap nikto gobuster hydra hashcat john binwalk
 ```
+
+Windows 上没有一条包管理器命令能覆盖它们：请逐个到各工具自己的项目页面安装，通常是签名
+安装包，或解压后放进 `PATH` 的 Release 包。
 
 工具缺失时运行期会跳过，而不会让整次运行失败。
 

@@ -16,7 +16,7 @@ Provena 是一个命令行工具。以下文档覆盖构建、配置、安全使
 ## 核心概念与编排
 
 - [架构说明](architecture.md) · [安全模型](security-model.md)
-- [Agent 与角色](agent-and-role-guide.md) · [Skills 指南](skills-guide.md) · [Eino 多代理](MULTI_AGENT_EINO.md) · [Agent 最终回复治理](agent-finalization-best-practices.md)
+- [Agent 与角色](agent-and-role-guide.md) · [Skills 指南](skills-guide.md) · [Eino 编排与命令行工具](MULTI_AGENT_EINO.md) · [Agent 最终回复治理](agent-finalization-best-practices.md)
 - [工具执行治理](tool-execution-governance.md) · [人机协同最佳实践](hitl-best-practices.md)
 
 ## 功能指南

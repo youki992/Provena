@@ -28,12 +28,14 @@ This repository is the command-line tool: `chat`, `run`, `doctor`, `init`, `conf
 
 | | |
 | --- | --- |
+| **OS** | 64-bit Windows or Linux. The bundled-scanner launcher (`tools/bundled_tool.py`) has no macOS path, so the eight tools it starts only run on those two platforms. |
 | **Go** | 1.25 or newer (see `go.mod`) |
 | **Pi** | the `pi` CLI on `PATH`. Provena drives it as the agent runtime (`pi --mode rpc`); set `pi_agent.command` to use a different executable. |
-| **Model** | any OpenAI-compatible chat endpoint |
-| **Python** | 3.10 or newer — only for the Python-backed tools |
+| **Model** | any OpenAI-compatible chat endpoint. Provena hands the selected channel's `provider`, `base_url`, `api_key` and `model` to Pi, so configure it under `ai.channels`. |
+| **Python** | 3.10 or newer — needed by the Python-backed recipes and by the bundled-scanner launcher |
 
-`provena doctor` checks all four before a run does any work.
+`provena doctor` checks the config, the AI channel, the pi runtime, python, the
+tools/skills/agents directories and every configured MCP server before a run does any work.
 
 ## Build
 
@@ -41,7 +43,7 @@ This repository is the command-line tool: `chat`, `run`, `doctor`, `init`, `conf
 git clone https://github.com/youki992/Provena.git
 cd Provena
 
-go build -o provena ./cmd/provena        # Linux / macOS
+go build -o provena ./cmd/provena        # Linux
 go build -o provena.exe ./cmd/provena    # Windows
 ```
 
@@ -231,12 +233,13 @@ nikto, sqlmap, nuclei, gobuster, hydra, hashcat and so on. Install them with you
 manager or from upstream:
 
 ```bash
-# macOS
-brew install nmap sqlmap nikto gobuster hydra hashcat nuclei
-
 # Linux (Kali / Debian / Ubuntu)
 sudo apt install -y nmap sqlmap nikto gobuster hydra hashcat john binwalk
 ```
+
+On Windows there is no single package-manager line that covers them: install each tool from
+its own project, usually a signed installer or a release archive you unpack somewhere on
+`PATH`.
 
 Missing tools are skipped at runtime rather than failing the run.
 
