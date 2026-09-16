@@ -25,7 +25,7 @@ import (
 
 // bridgeTokenHeader must match the header written into the generated Pi
 // extension by internal/piagent.
-const bridgeTokenHeader = "X-CyberStrike-Pi-Bridge-Token"
+const bridgeTokenHeader = "X-Provena-Pi-Bridge-Token"
 
 const (
 	// maxBridgeBodyBytes bounds a single tool call payload.

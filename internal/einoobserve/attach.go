@@ -78,7 +78,7 @@ func AttachAgentRunCallbacks(ctx context.Context, cfg *config.MultiAgentEinoCall
 		b = b.OnStartWithStreamInputFn(h.onStartStreamIn).OnEndWithStreamOutputFn(h.onEndStreamOut)
 	}
 	ri := &callbacks.RunInfo{
-		Name:      "CyberStrikeADKRun",
+		Name:      "ProvenaADKRun",
 		Type:      strings.TrimSpace(p.OrchMode),
 		Component: components.Component("AgentSession"),
 	}

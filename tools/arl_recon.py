@@ -2,7 +2,7 @@
 """Small, dependency-light adapters for the useful ARL reconnaissance routines.
 
 The original ARL application couples these routines to Flask, Celery and MongoDB.
-This module keeps the scanning behavior stateless so CyberStrike can expose each
+This module keeps the scanning behavior stateless so Provena can expose each
 operation as an ordinary security tool.  It deliberately caps port enumeration
 at Top 1000; full-port scanning is not supported here.
 """
@@ -403,7 +403,7 @@ def run_fingerprint(args: argparse.Namespace) -> int:
         raise RuntimeError("fingerprint scan requires the Python requests package") from exc
 
     requested_target = args.target if "://" in args.target else f"http://{args.target}"
-    headers = {"User-Agent": "CyberStrike-ARL/1.0"}
+    headers = {"User-Agent": "Provena-ARL/1.0"}
     response, target, protocol_fallback = request_with_protocol_fallback(
         requests, requested_target, args.timeout, not args.allow_insecure, headers)
     body = response.content
@@ -412,7 +412,7 @@ def run_fingerprint(args: argparse.Namespace) -> int:
     favicon_hash = None
     try:
         icon = requests.get(urljoin(response.url, "/favicon.ico"), timeout=args.timeout,
-                            verify=not args.allow_insecure, headers={"User-Agent": "CyberStrike-ARL/1.0"})
+                            verify=not args.allow_insecure, headers={"User-Agent": "Provena-ARL/1.0"})
         if icon.status_code == 200 and len(icon.content) > 80:
             encoded = base64.b64encode(icon.content).decode("ascii")
             encoded = "\n".join(encoded[index:index + 76] for index in range(0, len(encoded), 76))
@@ -469,7 +469,7 @@ def make_directory_paths(target: str, wordlist: Path, limit: int) -> list[str]:
 
 def fetch_path(requests_module: Any, url: str, timeout: float, verify: bool) -> dict[str, Any]:
     response = requests_module.get(url, timeout=timeout, verify=verify, allow_redirects=False,
-                                   headers={"User-Agent": "CyberStrike-ARL/1.0"})
+                                   headers={"User-Agent": "Provena-ARL/1.0"})
     body = response.content[:65536]
     return {"url": url, "status": response.status_code, "body": body,
             "length": len(response.content), "location": response.headers.get("Location", ""),

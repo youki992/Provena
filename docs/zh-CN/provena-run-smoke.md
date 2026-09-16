@@ -12,7 +12,7 @@
 ## 0. 编译
 
 ```bash
-cd CyberStrikeAI-main
+cd Provena-main
 go build -o provena.exe ./cmd/provena      # Windows
 go build -o provena ./cmd/provena          # Linux/macOS
 ```

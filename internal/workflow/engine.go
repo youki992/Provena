@@ -122,7 +122,7 @@ func (e *Engine) compile(ctx context.Context, g *graphDef) (*compiledArtifact, e
 	}
 	hitlIDs := collectHITLNodeIDs(idx)
 	compileOpts := []compose.GraphCompileOption{
-		compose.WithGraphName("CyberStrikeWorkflow"),
+		compose.WithGraphName("ProvenaWorkflow"),
 		compose.WithCheckPointStore(cpStore),
 	}
 	if len(hitlIDs) > 0 {

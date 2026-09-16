@@ -539,7 +539,7 @@ func callPiFGSTestTool(t *testing.T, b *piBridge, payload map[string]interface{}
 	request := httptest.NewRequest(http.MethodPost, "http://127.0.0.1/call", strings.NewReader(string(data)))
 	request.RemoteAddr = "127.0.0.1:12345"
 	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("X-CyberStrike-Pi-Bridge-Token", b.Token())
+	request.Header.Set("X-Provena-Pi-Bridge-Token", b.Token())
 	response := httptest.NewRecorder()
 	b.handleCall(response, request)
 	body, err := io.ReadAll(response.Result().Body)

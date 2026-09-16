@@ -71,7 +71,7 @@ func TestPiBridgeRejectsInvalidTokenAndUnknownTool(t *testing.T) {
 
 	request = httptest.NewRequest(http.MethodPost, "http://127.0.0.1/call", nil)
 	request.RemoteAddr = "127.0.0.1:12345"
-	request.Header.Set("X-CyberStrike-Pi-Bridge-Token", "expected")
+	request.Header.Set("X-Provena-Pi-Bridge-Token", "expected")
 	response = httptest.NewRecorder()
 	b.handleCall(response, request)
 	if response.Code != http.StatusBadRequest {
@@ -106,7 +106,7 @@ func TestPiBridgeCallsInternalMCPTool(t *testing.T) {
 		t.Fatalf("new request: %v", err)
 	}
 	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("X-CyberStrike-Pi-Bridge-Token", bridge.Token())
+	request.Header.Set("X-Provena-Pi-Bridge-Token", bridge.Token())
 	response, err := http.DefaultClient.Do(request)
 	if err != nil {
 		t.Fatalf("bridge call: %v", err)
@@ -155,7 +155,7 @@ func TestPiBridgeRejectsOutOfScopeAsset(t *testing.T) {
 		t.Fatalf("new request: %v", err)
 	}
 	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("X-CyberStrike-Pi-Bridge-Token", bridge.Token())
+	request.Header.Set("X-Provena-Pi-Bridge-Token", bridge.Token())
 	response, err := http.DefaultClient.Do(request)
 	if err != nil {
 		t.Fatalf("bridge call: %v", err)
@@ -197,7 +197,7 @@ func TestPiBridgeRejectsAssetWithoutTarget(t *testing.T) {
 		t.Fatalf("new request: %v", err)
 	}
 	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("X-CyberStrike-Pi-Bridge-Token", bridge.Token())
+	request.Header.Set("X-Provena-Pi-Bridge-Token", bridge.Token())
 	response, err := http.DefaultClient.Do(request)
 	if err != nil {
 		t.Fatalf("bridge call: %v", err)

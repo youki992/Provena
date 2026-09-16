@@ -1,299 +1,98 @@
 <div align="center">
-  <img src="images/logo.png" alt="Provena Logo" width="200" >
-</div>
 
 # Provena
 
-
-[中文](README_CN.md) | [English](README.md)
-
-**The system of action for AI-native cybersecurity—where intent becomes governed execution, evidence becomes operational memory, and every operation improves the next.**
-
-Provena connects planning, execution, human oversight, evidence, and replay in one auditable workspace. Built in Go, it combines Eino-powered agents, MCP-native tools, RAG knowledge, visual workflows, and attack-chain modeling and analysis for authorized security operations.
-
-**Start here:** [Quick start](#quick-start-one-command-deployment) · [Documentation](docs/en-US/README.md) · [Security hardening](docs/en-US/security-hardening.md)
-
-> [!IMPORTANT]
-> Use Provena only on systems you own or are explicitly authorized to test. For shared or production environments, review the [security model](docs/en-US/security-model.md) and [hardening guide](docs/en-US/security-hardening.md) before enabling high-risk tools, WebShell, or C2 capabilities.
-
-## Interface & Integration Preview
-
-<div align="center">
-
-### System Dashboard Overview
-
-<table>
-<tr>
-<td width="50%" align="center">
-<strong>Light Mode</strong><br/>
-<img src="./images/dashboard.png" alt="System Dashboard (Light)" width="100%">
-</td>
-<td width="50%" align="center">
-<strong>Dark Mode</strong><br/>
-<img src="./images/dark.png" alt="System Dashboard (Dark)" width="100%">
-</td>
-</tr>
-</table>
-
-*The dashboard provides a comprehensive overview of system runtime status, security vulnerabilities, tool usage, and knowledge base, helping users quickly understand the platform's core features and current state.*
-
-<details>
-<summary><strong>More interface screenshots</strong></summary>
-
-### Core Features Overview
-
-<table>
-<tr>
-<td width="33.33%" align="center">
-<strong>Web Console</strong><br/>
-<img src="./images/web-console.png" alt="Web Console" width="100%">
-</td>
-<td width="33.33%" align="center">
-<strong>Task Management</strong><br/>
-<img src="./images/task-management.png" alt="Task Management" width="100%">
-</td>
-<td width="33.33%" align="center">
-<strong>Vulnerability Management</strong><br/>
-<img src="./images/vulnerability-management.png" alt="Vulnerability Management" width="100%">
-</td>
-</tr>
-<tr>
-<td width="33.33%" align="center">
-<strong>WebShell Management</strong><br/>
-<img src="./images/webshell-management.png" alt="WebShell Management" width="100%">
-</td>
-<td width="33.33%" align="center">
-<strong>MCP Management</strong><br/>
-<img src="./images/mcp-management.png" alt="MCP management" width="100%">
-</td>
-<td width="33.33%" align="center">
-<strong>Knowledge Base</strong><br/>
-<img src="./images/knowledge-base.png" alt="Knowledge Base" width="100%">
-</td>
-</tr>
-<tr>
-<td width="33.33%" align="center">
-<strong>Skills Management</strong><br/>
-<img src="./images/skills.png" alt="Skills Management" width="100%">
-</td>
-<td width="33.33%" align="center">
-<strong>Agent Management</strong><br/>
-<img src="./images/agent-management.png" alt="Agent Management" width="100%">
-</td>
-<td width="33.33%" align="center">
-<strong>Role Management</strong><br/>
-<img src="./images/role-management.png" alt="Role Management" width="100%">
-</td>
-</tr>
-<tr>
-<td width="33.33%" align="center">
-<strong>System Settings</strong><br/>
-<img src="./images/settings.png" alt="System settings" width="100%">
-</td>
-<td width="33.33%" align="center">
-<strong>MCP stdio Mode</strong><br/>
-<img src="./images/mcp-stdio2.png" alt="MCP stdio mode" width="100%">
-</td>
-<td width="33.33%" align="center">
-<strong>Burp Suite Plugin</strong><br/>
-<img src="./images/plugins.png" alt="Burp Suite plugin" width="100%">
-</td>
-</tr>
-</table>
-
-</details>
+**Evidence-driven security testing agent — headless CLI.**
 
 </div>
 
-## Highlights
+[中文](README_CN.md) | [English](README.md)
 
-### Agents and orchestration
+Provena turns a natural-language objective into a bounded, auditable test against one
+authorized target. Every run keeps its state in an append-only **Fact/Intent Graph** and
+writes a report you can hand to a reviewer.
 
-- 🤖 **Agentic execution** translates natural-language intent into governed, auditable security actions.
-- 🧩 **Eino orchestration** supports single-agent execution plus Deep, Plan-Execute, and Supervisor multi-agent modes.
-- 🔀 **Graph workflows** combine Agents, tools, conditions, approvals, and outputs into reusable flows.
-- 🎭 **Role-based testing** provides focused prompts and tool policies for common security scenarios.
+Written in Go, it combines an Eino-powered agent, MCP-native tools, RAG knowledge and
+attack-chain modelling for authorized security operations.
 
-### Tools and knowledge
+**This repository ships the CLI only.** There is no web console and nothing ever binds a
+port: the binary has no `serve` command, registers no HTTP routes, and keeps all output on
+the terminal.
 
-- 🧰 **Security tools** include 100+ curated YAML recipes with custom extensions and role-scoped access.
-- 🔌 **MCP integration** supports HTTP, stdio, SSE, external federation, and dynamic tool discovery.
-- ⏱️ **Resilient tool execution** runs blocking MCP/tool calls in workers with bounded agent waits, resumable `execution_id` polling, cancellation, per-server circuit breakers, concurrency limits, and unified output caps.
-- 🎯 **Agent Skills** follow the standard Skill layout and support progressive, on-demand loading.
-- 📚 **Knowledge base** combines query rewriting, vector retrieval, reranking, and result post-processing.
-- 🖼️ **Vision analysis** uses a separate vision model for screenshots, captchas, and UI while retaining text summaries only.
+> [!IMPORTANT]
+> Use Provena only on systems you own or are explicitly authorized to test.
+> See [SECURITY.md](SECURITY.md).
 
-### Governance and audit
+## Requirements
 
-- 🧑‍⚖️ **Human in the loop** provides approval modes, tool allowlists, audit-agent review, and traceable decisions.
-- 🔐 **Platform RBAC** supports multiple users, system and custom roles, scoped permissions, ownership, and explicit assignments.
-- 🔒 **Security and audit** provide authenticated access, audit logs, SQLite persistence, and operational evidence retention.
-- 📄 **Result governance** stores the same capped tool result seen by the agent, protects resume paths from oversized historical output, and adds UI safeguards for large detail views. See [Tool Execution Governance](docs/en-US/tool-execution-governance.md).
+| | |
+| --- | --- |
+| **Go** | 1.25 or newer (see `go.mod`) |
+| **Python** | 3.10 or newer — only for the Python-backed tools |
+| **Model** | any OpenAI-compatible chat endpoint |
 
-### Security operations
+## Build
 
-- 📁 **Conversation management** provides grouping, pinning, renaming, and batch organization.
-- 📂 **Projects and attack chains** connect cross-session facts, risk scoring, graph views, and step-by-step replay.
-- 🗂️ **Asset management** normalizes and deduplicates domains, IP addresses, ports, and services; supports XLSX/CSV import and export, advanced filters and saved views, ownership and business metadata, cross-page bulk maintenance, and duplicate merging; and tracks scan coverage, linked vulnerabilities, and risk state. See the [Asset Management guide](docs/en-US/asset-management.md).
-- 🛡️ **Vulnerability management** provides severity classification, lifecycle tracking, filtering, and statistics.
-- 📋 **Batch tasks** provide queued execution, editing, status tracking, and retained results.
-- 📱 **Chatbots** connect Personal WeChat, WeCom, DingTalk, Lark, Telegram, Slack, Discord, and QQ Bot.
-
-### Authorized security operations
-
-These capabilities are **opt-in and disabled by default**; a fresh install does not start a C2
-listener and does not expose WebShell tools to the agent.
-
-- 🐚 **WebShell management** provides connection management, a virtual terminal, file operations, and AI-assisted workflows. Enable with `webshell.enabled: true`.
-- 📡 **Built-in C2** provides listeners, encrypted beacons, sessions, task queues, payload helpers, and live events. Enable with `c2.enabled: true`.
-
-> WebShell, C2, and other high-risk capabilities are for systems you own or are explicitly authorized to test. See the [security model](docs/en-US/security-model.md) and [hardening guide](docs/en-US/security-hardening.md).
-
-## Plugins
-
-Provena includes optional integrations under `plugins/`.
-
-- **Burp Suite extension**: `plugins/burp-suite/provena-burp-extension/`  
-  Build output: `plugins/burp-suite/provena-burp-extension/dist/provena-burp-extension.jar`  
-  Docs: `plugins/burp-suite/provena-burp-extension/README.md`
-- **Browser extension (Chrome / Edge)**: `plugins/browser-extension/provena-browser-extension/`  
-  Capture Network traffic in DevTools and send it to Provena for AI-assisted security testing—aligned with the Burp plugin.  
-  Install: `chrome://extensions/` → Load unpacked → F12 → **Provena** tab  
-  Package output: `plugins/browser-extension/provena-browser-extension/dist/provena-browser-extension.zip`  
-  Docs: `plugins/browser-extension/provena-browser-extension/README.md` / `README.zh-CN.md`
-
-## Tool Overview
-
-Provena ships with 100+ curated tools covering the whole kill chain:
-
-<details>
-<summary><strong>View the complete tool categories</strong></summary>
-
-- **Network Scanners** – nmap, masscan, rustscan, arp-scan, nbtscan
-- **Web & App Scanners** – sqlmap, nikto, dirb, gobuster, feroxbuster, ffuf, httpx
-- **Vulnerability Scanners** – nuclei, wpscan, wafw00f, dalfox, xsser
-- **Subdomain Enumeration** – subfinder, amass, findomain, dnsenum, fierce
-- **Network Space Search Engines** – fofa_search, zoomeye_search, quake_search, shodan_search
-- **API Security** – graphql-scanner, arjun, api-fuzzer, api-schema-analyzer
-- **Container Security** – trivy, clair, docker-bench-security, kube-bench, kube-hunter
-- **Cloud Security** – prowler, scout-suite, cloudmapper, pacu, terrascan, checkov
-- **Binary Analysis** – gdb, radare2, ghidra, objdump, strings, binwalk
-- **Exploitation** – metasploit, msfvenom, pwntools, ropper, ropgadget
-- **Password Cracking** – hashcat, john, hashpump
-- **Forensics** – volatility, volatility3, foremost, steghide, exiftool
-- **Post-Exploitation** – linpeas, winpeas, mimikatz, bloodhound, impacket, responder
-- **CTF Utilities** – stegsolve, zsteg, hash-identifier, fcrackzip, pdfcrack, cyberchef
-- **System Helpers** – exec, create-file, delete-file, list-files, modify-file
-
-</details>
-
-See [tools/README_EN.md](tools/README_EN.md) for tool definitions, customization, and usage notes.
-
-## Basic Usage
-
-### Quick Start (One-Command Deployment)
-
-**Prerequisites:**
-- Go 1.25+ ([Install](https://go.dev/dl/); required by `go.mod`)
-- Python 3.10+ ([Install](https://www.python.org/downloads/))
-
-**One-Command Deployment:**
 ```bash
-git clone https://github.com/chobits02/provena.git
+git clone https://github.com/youki992/Provena.git
 cd Provena
-chmod +x run.sh && ./run.sh
+
+go build -o provena ./cmd/provena        # Linux / macOS
+go build -o provena.exe ./cmd/provena    # Windows
 ```
 
-The `run.sh` script will automatically:
-- ✅ Check and validate Go & Python environments
-- ✅ Create Python virtual environment
-- ✅ Install Python dependencies
-- ✅ Download Go dependencies
-- ✅ Build the project
-- ✅ Start the server
-
-**Verify the startup:**
-
-1. Confirm the terminal displays `● ONLINE` followed by the actual Web UI URL.
-2. Open that URL; the default HTTPS mode uses a local self-signed certificate, so accept the browser warning once.
-3. On a new installation, store the one-time `admin` password shown under `ADMIN SETUP REQUIRED`, sign in, and change it immediately.
-
-**Networking defaults:** `run.sh` starts the server with **`--https`** and the repo **`config.yaml`** (local self-signed TLS; better for many concurrent streams). Use **`./run.sh --http`** for plain HTTP. In production, set **`server.tls_cert_path`** / **`server.tls_key_path`** in **`config.yaml`** (see comments there). For manual runs, add **`--https`** or **`PROVENA_HTTPS=1`**; if **`-config`** is wrong, the binary prints a short usage hint on stderr.
-
-**First-Time Configuration:**
-1. **Configure AI channels** (required before first use)
-   - After launch, open **`https://127.0.0.1:8080/`** (or **`https://localhost:8080/`**; replace **8080** with `server.port` in `config.yaml`) and accept the self-signed certificate warning once. If you used `./run.sh --http`, use **`http://`** instead.
-   - Go to `System Settings` → `Basic Settings` → `AI Channel Configuration`, add or edit a channel, then fill in provider, Base URL, API key, model, and token limits. Click **Save changes**. The left channel list supports setting a default, copy, delete, and bulk probe.
-     ```yaml
-     ai:
-       default_channel: openai-main
-       channels:
-         openai-main:
-           name: OpenAI Main
-           provider: openai_compatible
-           api_key: "${OPENAI_API_KEY}"
-           base_url: "https://api.openai.com/v1"  # or https://api.deepseek.com/v1
-           model: "gpt-4o"  # or deepseek-chat, qwen3-max, etc.
-           max_total_tokens: 120000
-           max_completion_tokens: 16384
-     ```
-   - Or edit `config.yaml` directly before launching. `ai.default_channel` is used for new conversations and tasks that do not explicitly select a channel; the chat page can also select any saved channel per session.
-2. **Login** - On first startup the console prints an auto-generated initial `admin` password; create accounts from **Platform permissions → User management**
-3. **Install security tools (optional)** - Install tools from `tools/` as needed; missing tools are skipped or substituted at runtime. Common examples:
-
-   **macOS (Homebrew):**
-   ```bash
-   brew install nmap masscan sqlmap nikto gobuster ffuf hydra hashcat nuclei subfinder
-   ```
-
-   **Linux (Kali / Debian / Ubuntu):**
-   ```bash
-   sudo apt update
-   sudo apt install -y nmap masscan sqlmap nikto gobuster hydra hashcat john binwalk
-   # On some distros, install ffuf/nuclei/subfinder via go install or upstream docs
-   ```
-
-   See the `tools/` directory for the full list; refer to each tool's official docs for install details.
-
-**Alternative Launch Methods:**
-```bash
-# Direct Go run (set up env yourself); add --https to match run.sh defaults
-go run -tags webconsole ./cmd/provena serve --https
-
-# Manual build (the web console is an opt-in build)
-go build -tags webconsole -o provena ./cmd/provena
-./provena --https
-```
-
-> **The web console requires `-tags webconsole`.** A plain `go build ./cmd/provena`
-> produces the CLI-only binary: no `serve` command, no HTTP routes registered, no port
-> ever bound. The CLI commands (`run` / `doctor` / `init` / `config` / `version`) are
-> identical in both builds.
-
-### Command line interface
-
-The same binary is a small CLI, so you can validate a setup before starting anything:
+The current version is **v0.1.0**, the default compiled into `cmd/provena/main.go` and
+mirrored by the `version` field in `config.example.yaml`. Confirm the build:
 
 ```bash
-provena init                # create config.yaml from config.example.yaml
-provena doctor              # check config, model credentials, pi/python, MCP servers
-provena config validate     # validate the configuration file
-provena chat -t <target>    # interactive session: multi-turn, interruptible, resumable
-provena run -t <target>     # run a bounded, headless test against one target
-provena serve               # start the web console and MCP endpoints (webconsole build)
-provena version
+./provena version     # provena v0.1.0
+./provena help        # command list; no serve, no port
 ```
 
-All commands accept `-config <path>` (default `config.yaml`). In a `webconsole` build,
-a bare flag list (for example `provena --https -config config.yaml`) is treated as
-`provena serve`, so existing launchers, systemd units and container entrypoints keep
-working unchanged; in a CLI-only build that form fails with a message explaining how to
-rebuild.
+## Quick start
 
-### Interactive sessions
+```bash
+./provena init            # writes config.yaml from config.example.yaml
+```
 
-`provena chat` keeps one Pi process alive for the whole conversation, so the model sees the
-previous turns, and it can be interrupted and resumed:
+Then point one AI channel at your model:
+
+```yaml
+ai:
+  default_channel: openai-main
+  channels:
+    openai-main:
+      provider: openai_compatible
+      api_key: "${OPENAI_API_KEY}"
+      base_url: "https://api.openai.com/v1"
+      model: "your-model"
+```
+
+```bash
+./provena doctor          # validate config, credentials, python and MCP wiring
+./provena run -t https://example.com --objective "review the login flow"
+```
+
+`provena doctor` and `provena run --dry-run` resolve the whole wiring without calling the
+model. Use them before spending tokens.
+
+## Commands
+
+| Command | Purpose |
+| --- | --- |
+| `provena chat` | Interactive multi-turn session; interruptible and resumable |
+| `provena run` | Bounded, headless test against one target |
+| `provena doctor` | Check config, model credentials, python and MCP servers |
+| `provena init` | Create `config.yaml` from the bundled example |
+| `provena config validate` | Validate the configuration file |
+| `provena version` | Print the version |
+
+Every command accepts `-config <path>` (default `config.yaml`).
+
+## Interactive sessions
+
+`provena chat` keeps a single Pi process alive for the whole conversation, so the model sees
+the previous turns, and the session can be interrupted and resumed:
 
 ```bash
 provena chat -t https://example.com --objective "review the login flow"
@@ -310,10 +109,9 @@ provena chat --continue        # reopen the most recent session
 The first `Ctrl+C` aborts the running turn and keeps the conversation; the second leaves.
 State lives in `data/sessions/<id>/`.
 
-### Headless runs
+## Headless runs
 
-`provena run` drives the same agent core as the console, but without a browser. Each run
-keeps its state in an append-only Fact/Intent graph and writes a report:
+`provena run` drives the same agent core as `chat`, without a prompt loop:
 
 ```bash
 provena run -t https://example.com \
@@ -336,163 +134,159 @@ provena run -t https://example.com \
 
 Each run writes to `data/runs/<run-id>/`:
 
-- `graph.jsonl` — append-only Fact/Intent graph (the run's durable state)
+- `graph.jsonl` — the append-only Fact/Intent Graph (the run's durable state)
 - `report.md`, `report.json`, `report.sarif` — findings, evidence and severity
 
 Findings recorded here are evidence-backed observations, not automatically confirmed
-vulnerabilities; verify them before acting. `--dry-run` is the fastest way to confirm that a
-provider, the `pi` runtime and the tool registry are wired correctly before spending tokens.
+vulnerabilities; verify them before acting.
 
-If server logs show `client sent an HTTP request to an HTTPS server`, a client is still using **`http://`** on a TLS-only port—switch the URL to **`https://`**.
+## Tools
 
-**Note:** The Python virtual environment (`venv/`) is automatically created and managed by `run.sh`. Tools that require Python (like `api-fuzzer`, `http-framework-test`, etc.) will automatically use this environment.
+### Nothing is bundled — download the scanners yourself
 
-### Upgrade and Compatibility
+This repository deliberately ships **no third-party scanner binaries and no `tools/bin`
+directory**. Download the tools you want from their own upstream release pages and put them
+where Provena looks for them.
 
-**Provena one-click upgrade:**
-1. (First time) enable the script: `chmod +x upgrade.sh`
-2. Upgrade with: `./upgrade.sh` (optional flags: `--tag vX.Y.Z`, `--no-venv`, `--yes`). Local `tools/`, `roles/`, and `skills/` are always preserved.
-3. The script will back up your `config.yaml` and `data/`, upgrade the code from GitHub Release, update `config.yaml`'s `version`, then restart the server.
+Tool behaviour, the YAML schema and how to add your own are documented in
+[tools/README.md](tools/README.md) (Chinese) and
+[tools/README_EN.md](tools/README_EN.md) (English).
 
-Recommended one-liner:
-`chmod +x upgrade.sh && ./upgrade.sh --yes`
+### Bundled scanners — `tools/bin/<tool>/<platform>/<tool>[.exe]`
 
-If something goes wrong, you can restore from `.upgrade-backup/` (or manually copy `/data` and `config.yaml` back) and run `./run.sh` again.
+Eight tools are launched through [`tools/bundled_tool.py`](tools/bundled_tool.py), which
+resolves the executable **inside the repository** rather than from `PATH`. Place each
+binary at:
 
-Requirements / tips:
-* You need `curl` or `wget` for downloading Release packages.
-* `rsync` is recommended/required for the safe code sync.
-* If GitHub API rate-limits you, set `export GITHUB_TOKEN="..."` before running `./upgrade.sh`.
+```
+tools/bin/<tool>/<platform>/<tool>[.exe]
+```
 
-⚠️ **Before upgrading:** review the target release notes for configuration, database, and API changes. Backups are required even for patch upgrades; a version number alone is not a compatibility guarantee.
+where `<platform>` is `windows-amd64` on Windows and `linux-amd64` on Linux.
 
+| Tool | Definition | Expected path (Linux / Windows) |
+| --- | --- | --- |
+| `amass` | `tools/amass.yaml` | `tools/bin/amass/<platform>/amass` / `amass.exe` |
+| `subfinder` | `tools/subfinder.yaml` | `tools/bin/subfinder/<platform>/subfinder` / `.exe` |
+| `ffuf` | `tools/ffuf.yaml` | `tools/bin/ffuf/<platform>/ffuf` / `.exe` |
+| `gau` | `tools/gau.yaml` | `tools/bin/gau/<platform>/gau` / `.exe` |
+| `katana` | `tools/katana.yaml` | `tools/bin/katana/<platform>/katana` / `.exe` |
+| `waybackurls` | `tools/waybackurls.yaml` | `tools/bin/waybackurls/<platform>/waybackurls` / `.exe` |
+| `dddd` | `tools/dddd.yaml` | `tools/bin/dddd/<platform>/dddd` / `.exe` |
+| `nmap` | `tools/nmap.yaml` | `tools/bin/nmap/<platform>/nmap` / `.exe` |
+
+For example, on Linux:
+
+```bash
+mkdir -p tools/bin/ffuf/linux-amd64
+# unpack the ffuf release archive, then
+cp ffuf tools/bin/ffuf/linux-amd64/ffuf
+chmod +x tools/bin/ffuf/linux-amd64/ffuf
+```
+
+Resolution order and exceptions:
+
+- **nmap on Windows** — `%ProgramFiles%\Nmap\nmap.exe` and `%ProgramFiles(x86)%\Nmap\nmap.exe`
+  are tried before `tools/bin/nmap/windows-amd64/nmap.exe`, so a normal Nmap installer works.
+- **katana** — `tools/bin/dddd/<platform>/WIHscan-1.0/katana[.exe]` is also accepted.
+- **Legacy Windows layout** — `tools/bin/<tool>/<tool>.exe` still resolves.
+- **Missing binary** — the run does not fail. The tool reports every path it checked and the
+  agent continues without it.
+
+`tools/bin` and `bin/` are git-ignored, so your downloads stay local and are never committed.
+
+### Python-backed tools
+
+Several recipes call `python` / `python3` and are resolved against `PATH` (with `py` as a
+Windows fallback). Create a virtual environment and install the shared dependencies:
+
+```bash
+python -m venv venv
+source venv/bin/activate          # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+Tools such as `http-framework-test`, `api-fuzzer` and the ARL recipes expect this
+environment to be active.
+
+### Tools that expect a globally installed binary
+
+Most of the 100+ recipes in `tools/` call a command by name and expect it on `PATH` — nmap,
+nikto, sqlmap, nuclei, gobuster, hydra, hashcat and so on. Install them with your package
+manager or from upstream:
+
+```bash
+# macOS
+brew install nmap sqlmap nikto gobuster hydra hashcat nuclei
+
+# Linux (Kali / Debian / Ubuntu)
+sudo apt install -y nmap sqlmap nikto gobuster hydra hashcat john binwalk
+```
+
+Missing tools are skipped at runtime rather than failing the run.
 
 ## Configuration
 
-Use [`config.example.yaml`](config.example.yaml) as the authoritative configuration template and copy only the values required for your environment. At minimum, configure the server and one AI channel:
+[`config.example.yaml`](config.example.yaml) is the authoritative template. At minimum,
+configure one AI channel as shown in [Quick start](#quick-start). Do not commit real
+credentials — `config.yaml` and `config.*.yaml` are git-ignored.
 
-```yaml
-server:
-  host: "127.0.0.1"
-  port: 8080
-ai:
-  default_channel: openai-main
-  channels:
-    openai-main:
-      provider: openai_compatible
-      api_key: "${OPENAI_API_KEY}"
-      base_url: "https://api.openai.com/v1"
-      model: "your-model"
-```
+`openai` is a backward-compatible runtime field; maintain new model settings under
+`ai.channels`. See the [configuration reference](docs/en-US/configuration.md) and the
+[security hardening guide](docs/en-US/security-hardening.md).
 
-`openai` is a backward-compatible runtime field; maintain new model settings in `ai.channels`. Do not commit real credentials. Review the [configuration reference](docs/en-US/configuration.md), [recommended profiles](docs/en-US/configuration-profiles.md), and [security hardening guide](docs/en-US/security-hardening.md) before exposing the service beyond localhost.
-
-## Related documentation
-
-- **New users:** [Deployment](docs/en-US/deployment.md) → [Configuration](docs/en-US/configuration.md) → [Troubleshooting](docs/en-US/troubleshooting.md)
-- **Operators:** [Configuration profiles](docs/en-US/configuration-profiles.md) → [Security hardening](docs/en-US/security-hardening.md) → [Runbooks](docs/en-US/runbooks.md)
-- **Integrators:** [API reference](docs/en-US/api-reference.md) → [API recipes](docs/en-US/api-recipes.md) → [MCP federation](docs/en-US/mcp-federation.md)
-- **Contributors:** [Developer guide](docs/en-US/developer-guide.md) → [Testing](docs/en-US/testing.md) → [Contributing](docs/en-US/contributing-guide.md)
-- **All topics:** [English documentation](docs/en-US/README.md) · [Bilingual documentation index](docs/README.md)
-
-## Project Layout
+## Project layout
 
 ```
 Provena/
-├── cmd/                 # Server, MCP stdio entrypoints, tooling
-├── internal/            # Agent, MCP core, handlers, C2 (`internal/c2`), security executor
-├── web/                 # Static SPA + templates
-├── tools/               # YAML tool recipes (100+ examples provided)
-├── roles/               # Role configurations (12+ predefined security testing roles)
-├── skills/              # Agent Skills dirs (SKILL.md + optional files; demo: provena-eino-demo)
-├── agents/              # Multi-agent Markdown (orchestrator.md + sub-agent *.md)
-├── docs/                # Topic docs (deployment, config, security, API, knowledge base, C2, WebShell, etc.)
-├── images/              # Docs screenshots & diagrams
-├── scripts/             # Repository maintenance checks, including documentation validation
-├── config.yaml          # Runtime configuration
-├── run.sh               # Convenience launcher
-└── README*.md
+├── cmd/provena/     # CLI entrypoint (main, chat, run, doctor, init, config)
+├── internal/        # Agent core, FGS graph, MCP, tools, reports, security executor
+├── tools/           # YAML tool recipes + bundled_tool.py launcher
+├── roles/           # Role configurations (prompts + tool policy per scenario)
+├── agents/          # Multi-agent Markdown (orchestrator.md + sub-agents)
+├── docs/            # Topic documentation
+├── evals/           # Evaluation fixtures
+├── config.example.yaml
+└── SECURITY.md
 ```
 
-## Basic Usage Examples
+Directories you populate yourself and that are not part of the repository:
+`tools/bin/` (scanner binaries), `skills/` (Agent Skills), `mcp-servers/` (external MCP
+servers), `data/` (run state, database, sessions) and `config.yaml`.
 
-```
-Scan open ports on 192.168.1.1
-Perform a comprehensive port scan on 192.168.1.1 focusing on 80,443,22
-Check if https://example.com/page?id=1 is vulnerable to SQL injection
-Scan https://example.com for hidden directories and outdated software
-Enumerate subdomains for example.com, then run nuclei against the results
-```
+## Documentation
 
-## Advanced Playbooks
+- **Getting started:** [configuration](docs/en-US/configuration.md) → [troubleshooting](docs/en-US/troubleshooting.md)
+- **Architecture:** [architecture](docs/en-US/architecture.md) → [MCP federation](docs/en-US/mcp-federation.md)
+- **Security:** [security model](docs/en-US/security-model.md) → [security hardening](docs/en-US/security-hardening.md)
+- **Extending:** [skills guide](docs/en-US/skills-guide.md) → [tool execution governance](docs/en-US/tool-execution-governance.md)
+- **All topics:** [English documentation](docs/en-US/README.md) · [双语文档索引](docs/README.md)
 
-```
-Load the recon-engagement template, run amass/subfinder, then brute-force dirs on every live host.
-Use external Burp-based MCP server for authenticated traffic replay, then pass findings back for graphing.
-Compress the 5 MB nuclei report, summarize critical CVEs, and attach the artifact to the conversation.
-Build an attack chain for the latest engagement and export the node list with severity >= high.
-```
-
-## 404Starlink 
-
-<img src="./images/404StarLinkLogo.png" width="30%">
-
-Provena has joined [404Starlink](https://github.com/knownsec/404StarLink)
-
-## TCH Top-Ranked Intelligent Pentest Project  
-<div align="left">
-  <a href="https://zc.tencent.com/competition/competitionHackathon?code=cha004" target="_blank">
-    <img src="./images/tch.png" alt="TCH Top-Ranked Intelligent Pentest Project" width="30%">
-  </a>
-</div>
-
-
-
----
-
-## Community and Support
-
-- Join the community on [Discord](https://discord.gg/8PjVCMu8Zw).
-
-<details>
-<summary><strong>WeChat group</strong></summary>
-
-<img src="./images/wechat-group-provena-qr.jpg" alt="Provena WeChat group QR code" width="280">
-
-</details>
-
-<details>
-<summary><strong>Sponsorship via WeChat Pay or Alipay</strong></summary>
-
-<div align="center">
-  <img src="./images/sponsor-wechat-alipay-qr.jpg" alt="WeChat Pay and Alipay sponsorship QR codes" width="480">
-</div>
-
-</details>
+Some documents under `docs/` were written for the former web console and still describe
+screens that are not part of this build. Treat the CLI sections as authoritative.
 
 ## License
 
-Provena is licensed under the Apache License 2.0.  
-See the [LICENSE](LICENSE) file for details.
+Provena is licensed under the Apache License 2.0. See [LICENSE](LICENSE).
 
 ---
 
-## ⚠️ Disclaimer
+## Disclaimer
 
-**This tool is for educational and authorized testing purposes only!**
+**This tool is for educational and authorized testing purposes only.**
 
-Provena is a professional security testing platform designed to assist security researchers, penetration testers, and IT professionals in conducting security assessments and vulnerability research **with explicit authorization**.
+Provena is a professional security testing tool designed to help security researchers,
+penetration testers and IT professionals conduct security assessments and vulnerability
+research **with explicit authorization**.
 
 **By using this tool, you agree to:**
-- Use this tool only on systems where you have clear written authorization
-- Comply with all applicable laws, regulations, and ethical standards
+
+- Use it only on systems for which you hold clear written authorization
+- Comply with all applicable laws, regulations and ethical standards
 - Take full responsibility for any unauthorized use or misuse
-- Not use this tool for any illegal or malicious purposes
+- Never use it for illegal or malicious purposes
 
-**The developers are not responsible for any misuse!** Please ensure your usage complies with local laws and regulations, and that you have obtained explicit authorization from the target system owner.
+**The developers are not responsible for any misuse.** Ensure your usage complies with
+local law and that you have obtained explicit authorization from the target system owner.
 
-For vulnerability reporting and deployment hardening guidance, see [SECURITY.md](SECURITY.md).
-
----
-
-Need help or want to contribute? Open an issue or PR—community tooling additions are welcome!
+For vulnerability reporting and hardening guidance, see [SECURITY.md](SECURITY.md).

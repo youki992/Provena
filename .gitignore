@@ -22,7 +22,10 @@ config.*.yaml
 *.crt
 
 # Build outputs
-provena
+# Anchor these to the repo root: a bare "provena" also matched the cmd/provena
+# source directory and kept the CLI entrypoint out of version control.
+/provena
+/provena.exe
 bin/
 dist/
 build/

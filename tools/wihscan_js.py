@@ -6,7 +6,7 @@ does the crawling; this adapter owns rule loading, matching, exclusions, and
 redaction so the rules file is never passed as a Katana configuration.
 
 The adapter emits JSON Lines and never prints a matched secret.  It is
-intended to be called by the CyberStrike tool runner, not as a general-purpose
+intended to be called by the Provena tool runner, not as a general-purpose
 shell wrapper.
 """
 

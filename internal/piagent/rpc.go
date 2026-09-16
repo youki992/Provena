@@ -422,7 +422,7 @@ export default function (pi) {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "X-CyberStrike-Pi-Bridge-Token": bridgeToken,
+            "X-Provena-Pi-Bridge-Token": bridgeToken,
           },
           body: JSON.stringify({ toolName: tool.name, args: params || {} }),
           signal,

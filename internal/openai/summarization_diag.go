@@ -13,7 +13,7 @@ import (
 // SummarizationRequestHeader marks chat/completion requests issued by Eino summarization
 // middleware (via model.WithExtraHeader). The diagnostic transport logs empty-choices bodies
 // only for these requests so main-agent traffic stays quiet.
-const SummarizationRequestHeader = "X-CyberStrike-Summarization"
+const SummarizationRequestHeader = "X-Provena-Summarization"
 
 const summarizationDiagBodyMaxBytes = 8192
 

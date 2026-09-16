@@ -219,7 +219,7 @@ func (b *piBridge) handleCall(w http.ResponseWriter, r *http.Request) {
 		b.writeError(w, http.StatusForbidden, "仅允许本机调用")
 		return
 	}
-	provided := r.Header.Get("X-CyberStrike-Pi-Bridge-Token")
+	provided := r.Header.Get("X-Provena-Pi-Bridge-Token")
 	if subtle.ConstantTimeCompare([]byte(provided), []byte(b.token)) != 1 {
 		b.writeError(w, http.StatusUnauthorized, "Bridge token 无效")
 		return

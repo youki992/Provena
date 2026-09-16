@@ -943,7 +943,7 @@ func piTaskKeywords(request string) []string {
 }
 
 // piActiveToolNames activates Pi's built-ins plus every role-authorized
-// CyberStrike bridge tool. Pi otherwise registers extension tools but leaves
+// Provena bridge tool. Pi otherwise registers extension tools but leaves
 // them inactive, which makes the model fall back to bash even when MCP/local
 // tools are available.
 func piActiveToolNames(configured []string, bridgeTools []piagent.BridgeTool) []string {

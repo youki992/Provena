@@ -237,7 +237,7 @@ func (w *einoFloatEmbedder) EmbedStrings(ctx context.Context, texts []string, op
 }
 
 func (w *einoFloatEmbedder) GetType() string {
-	return "CyberStrikeKnowledgeEmbedder"
+	return "ProvenaKnowledgeEmbedder"
 }
 
 func (w *einoFloatEmbedder) IsCallbacksEnabled() bool {
