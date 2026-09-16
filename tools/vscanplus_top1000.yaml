@@ -1,0 +1,18 @@
+name: "vscanplus_top1000"
+command: "vscanplus/vscan-windows-amd64.exe"
+args: ["-s", "c", "-np", "-silent", "-nc", "-top-ports", "1000", "-rate", "300", "-c", "25"]
+enabled: false
+short_description: "VscanPlus 端口扫描：Windows CONNECT 模式扫描常用 Top 1000 端口"
+description: |
+  使用项目内置的 VscanPlus Windows 版本执行授权资产的 Top 1000 端口扫描。
+
+  这是端口枚举工具，不执行 POC 检查、爆破或漏洞利用。默认使用 CONNECT 扫描，适合 Windows 普通权限环境；默认速率已降低到 300/s。
+
+  SRC 工作流中，完成范围确认后需要端口枚举时使用本工具。
+parameters:
+  - name: "target"
+    type: "string"
+    description: "已确认 in-scope 的 IP、主机名、域名或逗号分隔目标；禁止填入未确认授权的资产。"
+    required: true
+    flag: "-host"
+    format: "flag"

@@ -1,0 +1,53 @@
+name: "arl_port_scan"
+command: "python"
+args: ["tools/arl_recon.py", "ports"]
+no_output_timeout_seconds: -1
+enabled: true
+short_description: "ARL 风格端口扫描：常用端口或 Top 100/1000，禁止全端口"
+description: |
+  使用 ARL 的端口扫描策略探测已确认 in-scope 主机。
+  默认扫描 ARL 配置中的常用端口；需要更完整的枚举时可选择 Top 100 或 Top 1000，
+  优先调用项目内置 VscanPlus，缺失时使用系统 nmap。明确禁止 1-65535 全端口扫描。
+  输出 JSON Lines，便于后续指纹检测和服务分析接续使用。
+parameters:
+  - name: "target"
+    type: "string"
+    description: "已确认 in-scope 的 IP、主机名或域名；不接受未确认资产"
+    required: true
+    flag: "--target"
+    format: "flag"
+  - name: "ports"
+    type: "string"
+    description: "自定义 TCP 端口，如 80,443,8000-8100；最多 1000 个端口"
+    required: false
+    flag: "--ports"
+    format: "flag"
+  - name: "top_ports"
+    type: "int"
+    description: "ARL 端口档位，只允许 10、100 或 1000；默认 10"
+    required: false
+    default: 10
+    flag: "--top-ports"
+    format: "flag"
+    options: ["10", "100", "1000"]
+  - name: "timeout"
+    type: "float"
+    description: "单端口连接超时秒数，默认 1"
+    required: false
+    default: 1
+    flag: "--timeout"
+    format: "flag"
+  - name: "concurrency"
+    type: "int"
+    description: "TCP 探测并发数，默认 32"
+    required: false
+    default: 32
+    flag: "--concurrency"
+    format: "flag"
+  - name: "scan_timeout_minutes"
+    type: "float"
+    description: "Top 100/1000 外部扫描总时限；0 表示不设墙钟时限，任务可持续运行并可手动取消"
+    required: false
+    default: 0
+    flag: "--scan-timeout-minutes"
+    format: "flag"

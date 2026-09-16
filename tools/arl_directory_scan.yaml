@@ -1,0 +1,51 @@
+name: "arl_directory_scan"
+command: "python"
+args: ["tools/arl_recon.py", "directory"]
+enabled: true
+short_description: "ARL 风格目录扫描：Top 2000 字典、备份文件生成和 404 差异过滤"
+description: |
+  对已经确认属于 scope 且可访问的 Web 站点执行 ARL 风格目录/文件发现：使用 ARL
+  file_top_2000 字典，补充站点名备份后缀，并通过随机 404 基线、状态码、标题、响应长度
+  和正文相似度过滤 catch-all 页面。只报告候选路径，不执行漏洞利用。
+  应在指纹检测之后、针对高价值站点按需调用，避免对所有资产盲目爆破。
+parameters:
+  - name: "target"
+    type: "string"
+    description: "已确认 in-scope 的 HTTP/HTTPS 站点 URL"
+    required: true
+    flag: "--target"
+    format: "flag"
+  - name: "wordlist"
+    type: "string"
+    description: "可选目录字典路径；默认使用项目内置 ARL file_top_2000.txt"
+    required: false
+    flag: "--wordlist"
+    format: "flag"
+  - name: "limit"
+    type: "int"
+    description: "最多探测的路径数，默认 2000"
+    required: false
+    default: 2000
+    flag: "--limit"
+    format: "flag"
+  - name: "concurrency"
+    type: "int"
+    description: "HTTP 并发数，默认 10；目标环境较敏感时应调低"
+    required: false
+    default: 10
+    flag: "--concurrency"
+    format: "flag"
+  - name: "timeout"
+    type: "float"
+    description: "单请求超时秒数，默认 10"
+    required: false
+    default: 10
+    flag: "--timeout"
+    format: "flag"
+  - name: "allow_insecure"
+    type: "bool"
+    description: "忽略 TLS 证书错误；仅在授权测试目标确有需要时启用"
+    required: false
+    default: false
+    flag: "--allow-insecure"
+    format: "flag"

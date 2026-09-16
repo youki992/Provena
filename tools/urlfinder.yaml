@@ -1,0 +1,79 @@
+name: urlfinder
+command: tools/URLFinder.exe
+short_description: JS 敏感信息扫描、URL 与 API 路由爬取工具
+description: |
+  URLFinder 已停用。请使用 katana 执行授权目标的 Web 爬取和端点发现。
+  适用于信息收集阶段的 JS/路由枚举；只对当前任务明确授权且在 scope 内的目标使用。
+  关键词匹配：JS、JavaScript、敏感信息、隐藏接口、路由、URL 爬取、API 枚举。
+  Windows 可执行文件随项目部署在 tools/URLFinder.exe。
+enabled: false
+local: true
+no_output_timeout_seconds: 600
+parameters:
+  - name: url
+    type: string
+    description: 目标页面 URL
+    required: true
+    flag: -u
+  - name: mode
+    type: string
+    description: 抓取模式：1 普通（默认，优先交付结果），2 深入，3 安全深入（过滤 delete/remove 等危险路由；可能显著增加 Validate 时间）
+    required: false
+    default: "1"
+    flag: -m
+  - name: status
+    type: string
+    description: 输出状态码，如 all 或 200,403
+    required: false
+    default: all
+    flag: -s
+  - name: max
+    type: int
+    description: 最大抓取数；API/抓包任务建议先填 30-100，0 表示使用工具默认值
+    required: false
+    flag: -max
+  - name: threads
+    type: int
+    description: 抓取线程数；建议 2-4，避免 Validate 阶段长时间无输出
+    required: false
+    flag: -t
+  - name: timeout
+    type: int
+    description: 单请求超时时间（秒）；建议 5-15
+    required: false
+    flag: -time
+  - name: domain
+    type: string
+    description: 仅提取匹配该正则的域名
+    required: false
+    flag: -d
+  - name: base_url
+    type: string
+    description: 自定义相对 URL 的 base URL
+    required: false
+    flag: -b
+  - name: cookie
+    type: string
+    description: 请求 Cookie
+    required: false
+    flag: -c
+  - name: user_agent
+    type: string
+    description: 自定义 User-Agent
+    required: false
+    flag: -a
+  - name: proxy
+    type: string
+    description: HTTP 代理地址
+    required: false
+    flag: -x
+  - name: output
+    type: string
+    description: 结果导出目录或文件；不填则输出到标准输出
+    required: false
+    flag: -o
+  - name: additional_args
+    type: string
+    description: 其它 URLFinder 参数，例如 -z 1；按工具帮助格式传入
+    required: false
+    format: positional

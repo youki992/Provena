@@ -1,0 +1,37 @@
+name: "arl_subdomain_scan"
+command: "python"
+args: ["tools/arl_recon.py", "subdomains"]
+no_output_timeout_seconds: -1
+enabled: true
+short_description: "ARL 风格子域名扫描：字典枚举、DNS 解析和泛解析过滤"
+description: |
+  使用 ARL 的域名字典进行授权域名的子域名枚举，并对随机不存在域名做泛解析基线过滤。
+  适合在被动子域名收集后补充主动字典枚举；不要对未确认范围的根域名调用。
+  默认使用 ARL domain_2w.txt，输出 JSON Lines。该工具只做 DNS 解析，不执行端口或 Web 探测。
+parameters:
+  - name: "domain"
+    type: "string"
+    description: "已确认 in-scope 的根域名，例如 example.com"
+    required: true
+    flag: "--domain"
+    format: "flag"
+  - name: "wordlist"
+    type: "string"
+    description: "可选子域名字典路径；默认使用项目内置 ARL domain_2w.txt"
+    required: false
+    flag: "--wordlist"
+    format: "flag"
+  - name: "limit"
+    type: "int"
+    description: "最多枚举的字典词数，默认 20000"
+    required: false
+    default: 20000
+    flag: "--limit"
+    format: "flag"
+  - name: "concurrency"
+    type: "int"
+    description: "DNS 解析并发数，默认 50；目标环境较敏感时应调低"
+    required: false
+    default: 50
+    flag: "--concurrency"
+    format: "flag"

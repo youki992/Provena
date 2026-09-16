@@ -1,0 +1,30 @@
+name: "arl_fingerprint"
+command: "python"
+args: ["tools/arl_recon.py", "fingerprint"]
+enabled: true
+short_description: "ARL Web 指纹检测：状态、标题、Server、favicon 和应用指纹库"
+description: |
+  对已确认可访问的 HTTP/HTTPS 站点执行一次轻量 Web 指纹检测，复用 ARL webapp.json
+  应用指纹库，匹配响应正文、标题、响应头和 favicon hash，并输出证据片段。
+  仅在端口/HTTP 探测确认站点存活后调用；不会执行漏洞 POC 或目录爆破。
+parameters:
+  - name: "target"
+    type: "string"
+    description: "已确认 in-scope 的 URL 或 host:port"
+    required: true
+    flag: "--target"
+    format: "flag"
+  - name: "timeout"
+    type: "float"
+    description: "HTTP 请求超时秒数，默认 15"
+    required: false
+    default: 15
+    flag: "--timeout"
+    format: "flag"
+  - name: "allow_insecure"
+    type: "bool"
+    description: "忽略 TLS 证书错误；仅在授权测试目标确有需要时启用"
+    required: false
+    default: false
+    flag: "--allow-insecure"
+    format: "flag"

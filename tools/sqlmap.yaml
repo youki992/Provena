@@ -1,0 +1,20 @@
+name: sqlmap
+command: python
+args:
+  - C:\Users\13740\hacktool\SqlmapXPlus-main\SqlmapXPlus-main\sqlmap.py
+short_description: 使用 sqlmap 对授权目标进行 SQL 注入检测与验证，或者是在CTF SQL题目获取flag。
+description: |-
+  使用 sqlmap 对授权目标进行 SQL 注入检测与验证，或者是在CTF SQL题目获取flag。
+
+  调用时通过 additional_args 传入命令行参数，例如：
+  -u https://example.com/item?id=1 --batch
+
+  仅允许对已获得授权的目标执行安全测试。
+enabled: true
+parameters:
+  - name: additional_args
+    type: string
+    description: 要传给该命令的参数，按命令行格式填写；例如 sqlmap 可填写 -u https://example.com?id=1 --batch。
+    format: positional
+local: true
+no_output_timeout_seconds: -1

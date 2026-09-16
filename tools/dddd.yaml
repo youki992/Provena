@@ -1,0 +1,56 @@
+name: "dddd"
+command: "python"
+args: ["tools/bundled_tool.py", "dddd"]
+enabled: true
+no_output_timeout_seconds: -1
+short_description: "dddd 资产识别、Web 指纹与授权 PoC 扫描工具"
+description: |
+  使用项目内置 dddd 执行已授权目标的端口协议识别、Web 探测、指纹识别和 PoC 扫描。
+  dddd 自带指纹库、规则和 Katana；仅对明确 in-scope 的资产调用。
+
+  默认不跳过 PoC。若仅需要资产与指纹信息，请将 disable_poc 设为 true。
+parameters:
+  - name: "target"
+    type: "string"
+    description: "已确认授权的 IP、CIDR、域名、URL 或资产文件路径"
+    required: true
+    flag: "-t"
+    format: "flag"
+  - name: "ports"
+    type: "string"
+    description: "端口列表或范围，例如 80,443,8080 或 1-1000"
+    required: false
+    flag: "-p"
+    format: "flag"
+  - name: "subdomain"
+    type: "bool"
+    description: "启用子域名枚举"
+    required: false
+    default: false
+    flag: "-sd"
+    format: "flag"
+  - name: "disable_poc"
+    type: "bool"
+    description: "仅端口、Web 和指纹检测，不执行 PoC 扫描"
+    required: false
+    default: false
+    flag: "-npoc"
+    format: "flag"
+  - name: "full_poc"
+    type: "bool"
+    description: "在指纹完成后对所有已识别目标执行完整 PoC 集"
+    required: false
+    default: false
+    flag: "-fpoc"
+    format: "flag"
+  - name: "output_file"
+    type: "string"
+    description: "HTML 报告输出路径"
+    required: false
+    flag: "-o"
+    format: "flag"
+  - name: "additional_args"
+    type: "string"
+    description: "额外 dddd 参数"
+    required: false
+    format: "positional"

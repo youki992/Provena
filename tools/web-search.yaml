@@ -1,0 +1,79 @@
+name: "web-search"
+command: "python"
+args:
+  - "-c"
+  - |
+    import argparse, html, re, sys, urllib.parse, urllib.request
+
+    p = argparse.ArgumentParser()
+    p.add_argument("--query", required=True)
+    p.add_argument("--max-results", type=int, default=5)
+    a = p.parse_args()
+    limit = max(1, min(a.max_results, 10))
+    encoded = urllib.parse.quote_plus(a.query)
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Provena/1.0",
+        "Accept": "text/html,application/xhtml+xml",
+        "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+    }
+
+    def clean(value):
+        return re.sub(r"<.*?>", "", html.unescape(value or "")).strip()
+
+    def bing():
+        url = "https://www.bing.com/search?q=" + encoded + "&count=" + str(limit)
+        req = urllib.request.Request(url, headers=headers)
+        with urllib.request.urlopen(req, timeout=12) as r:
+            body = r.read().decode("utf-8", "replace")
+        found = []
+        for block in re.findall(r'<li class="b_algo".*?</li>', body, re.S):
+            match = re.search(r'<h2[^>]*>\s*<a[^>]*href="([^"]+)"[^>]*>(.*?)</a>', block, re.S)
+            if not match:
+                continue
+            found.append((clean(match.group(2)), html.unescape(match.group(1))))
+        return found
+
+    def duckduckgo():
+        url = "https://html.duckduckgo.com/html/?q=" + encoded
+        req = urllib.request.Request(url, headers=headers)
+        with urllib.request.urlopen(req, timeout=8) as r:
+            body = r.read().decode("utf-8", "replace")
+        found = []
+        for href, title in re.findall(r'<a rel="nofollow" class="result__a" href="(.*?)".*?>(.*?)</a>', body, re.S):
+            found.append((clean(title), html.unescape(href)))
+        return found
+
+    errors = []
+    results = []
+    for name, search in (("Bing", bing), ("DuckDuckGo", duckduckgo)):
+        try:
+            results = search()
+            if results:
+                print("Source: " + name)
+                break
+            errors.append(name + ": no results")
+        except Exception as exc:
+            errors.append(name + ": " + str(exc))
+
+    for i, (title, href) in enumerate(results[:limit], 1):
+        print(f"{i}. {title}\n   {href}")
+    if not results:
+        print("Search unavailable; engines failed: " + " | ".join(errors), file=sys.stderr)
+        sys.exit(1)
+    
+enabled: true
+short_description: "联网检索官方文档、安全公告和 CVE 资料"
+description: |
+  仅用于授权安全研究的联网检索。优先使用 Bing，失败时尝试 DuckDuckGo；输出标题、URL 和可核对的来源，不把搜索命中直接当作目标漏洞证据。
+parameters:
+  - name: "query"
+    type: "string"
+    description: "检索问题；优先包含产品、版本、漏洞类型或官方来源限定。"
+    required: true
+    flag: "--query"
+  - name: "max_results"
+    type: "int"
+    description: "最多返回结果数，范围 1-10。"
+    required: false
+    default: 5
+    flag: "--max-results"

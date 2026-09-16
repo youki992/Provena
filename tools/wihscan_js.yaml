@@ -1,0 +1,55 @@
+name: "wihscan_js"
+command: "python"
+args: ["tools/wihscan_js.py"]
+enabled: true
+short_description: "WIHscan JS/敏感信息扫描：提取 JavaScript、XHR 和脱敏敏感匹配"
+description: |
+  调用项目内置 WIHscan-1.0（Katana v1.6.1）执行受控的 Web JavaScript 爬取。
+  -jc/-jsl 负责 JS endpoint 解析，-xhr 仅在 headless 模式开启时启用；config/rules.yaml
+  由包装器单独加载，用于检测 JWT、API Key、密码和 webhook 等敏感信息。
+  输出为 JSON Lines，敏感值只输出脱敏片段，不输出原文。
+
+  仅在目标已确认属于 scope、HTTP 服务存活且需要补充 JS/API 入口时调用；默认深度 2、
+  单主机低速率和最多 50 页，禁止用它对整批资产盲目扫描。
+parameters:
+  - name: "target"
+    type: "string"
+    description: "已确认 in-scope 的绝对 HTTP/HTTPS URL"
+    required: true
+    flag: "--target"
+    format: "flag"
+  - name: "depth"
+    type: "int"
+    description: "JS 爬取深度，范围 1-10，默认 2"
+    required: false
+    default: 2
+    flag: "--depth"
+    format: "flag"
+  - name: "max_pages"
+    type: "int"
+    description: "单个站点最多爬取页数，默认 50；0 表示不设置页数上限"
+    required: false
+    default: 50
+    flag: "--max-pages"
+    format: "flag"
+  - name: "duration"
+    type: "string"
+    description: "Katana 最大爬取时长，例如 30s、60s、2m；默认 60s"
+    required: false
+    default: "60s"
+    flag: "--duration"
+    format: "flag"
+  - name: "rate_limit"
+    type: "int"
+    description: "每秒请求上限，范围 1-100，默认 10"
+    required: false
+    default: 10
+    flag: "--rate-limit"
+    format: "flag"
+  - name: "headless"
+    type: "bool"
+    description: "启用 Headless 与 XHR 提取；仅在普通 JS 爬取不足时使用"
+    required: false
+    default: false
+    flag: "--headless"
+    format: "flag"
