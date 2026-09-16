@@ -1,0 +1,68 @@
+# Runtime data
+data/
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Local configuration and secrets
+config.yaml
+config.local.yaml
+# Variant profiles (e.g. config.v3-minimal.yaml) hold real keys - never commit
+config.*.yaml
+!config.example.yaml
+.config.yaml
+*.backup
+*.bak
+.env
+.env.*
+*.pem
+*.key
+*.crt
+
+# Build outputs
+provena
+bin/
+dist/
+build/
+coverage.out
+coverage.html
+
+# Compiled binaries and release packaging
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+release/
+.release-staging-*/
+
+# Plugin (Maven / Gradle) build output
+target/
+*.class
+*.jar
+
+# Logs and temporary files
+*.log
+*.out
+*.err
+logs/
+tmp/
+temp/
+chat_uploads/
+
+# Python
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Go
+vendor/
+
+# macOS / editors
+.DS_Store
+.idea/
+.vscode/

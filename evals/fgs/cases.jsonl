@@ -1,0 +1,8 @@
+{"id":"arl_result_to_fact","given":"arl__arl_submit_scan returns an asset payload","expect":["one FGS fact with source=arl","fact links to assigned Step","pending experience candidate is created","project blackboard confidence is tentative"]}
+{"id":"arl_tool_discovery_empty","given":"external MCP discovery returns zero arl__ tools","expect":["eligible Step becomes blocked","controller Fact records retry_required=true","run returns partial rather than empty completion"]}
+{"id":"no_tool_call","given":"Pi Execute returns text without a world tool call","expect":["Execute empty-run Fact is retained","completed Step is downgraded to blocked","next Decide cannot treat Step as success"]}
+{"id":"arl_result_without_submit_fact","given":"ARL returns result but Pi omits submit_fact","expect":["bridge independently records ARL Fact","evidence controller accepts only nonempty evidenced observation"]}
+{"id":"arl_tool_error","given":"ARL MCP returns is_error=true","expect":["error result remains an ARL Fact","no automatic vulnerability or confirmed blackboard fact","experience remains pending"]}
+{"id":"duplicate_arl_retry","given":"same ARL tool, args, and response are delivered twice","expect":["result hash prevents duplicate Fact"]}
+{"id":"evaluator_bad_reference","given":"independent evaluator cites a nonexistent Fact ID","expect":["controller removes ID","accepted verdict degrades to insufficient"]}
+{"id":"experience_promotion_gate","given":"pending experience candidate","expect":["promotion rejected","verified or human_confirmed is required","verification actor and time are retained"]}

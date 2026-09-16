@@ -1,0 +1,45 @@
+server:
+  # Keep the application private; Nginx is the public HTTPS entry point.
+  host: 127.0.0.1
+  port: 9090
+  tls_enabled: false
+
+auth:
+  session_duration_hours: 12
+
+database:
+  path: data/conversations.db
+
+roles_dir: roles
+skills_dir: skills
+agents_dir: agents
+
+external_mcp:
+  servers: {}
+
+mcp:
+  enabled: false
+
+# Do not expose C2 functions on an Internet-facing deployment.
+c2:
+  enabled: false
+
+security:
+  tools_dir: tools
+
+agent:
+  tool_timeout_minutes: 30
+  tool_wait_timeout_seconds: 30
+
+ai:
+  default_channel: default
+  channels:
+    default:
+      name: Default
+      provider: openai_compatible
+      # Replace before starting. Do not commit a real key into this file.
+      api_key: "REPLACE_WITH_PROVIDER_KEY"
+      base_url: "https://api.example.com/v1"
+      model: "REPLACE_WITH_PROVIDER_MODEL"
+      max_total_tokens: 120000
+      max_completion_tokens: 32768

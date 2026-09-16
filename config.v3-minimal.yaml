@@ -1,0 +1,204 @@
+version: "3-minimal"
+profile: v3-minimal
+server:
+  host: 127.0.0.1
+  port: 8080
+  tls_enabled: false
+auth:
+  session_duration_hours: 12
+database:
+  path: data/conversations-v3.db
+  # 独立保存知识条目/向量，避免长期经验与会话生命周期互相影响。
+  knowledge_db_path: data/knowledge-v3.db
+skills_dir: skills-v3
+agents_dir: agents-v3
+global_system_prompt_path: C:/Users/13740/Downloads/SRC-6k-skill/clown-src-6k-skill/AGENTS.md
+# ARL 是第三版唯一外部 MCP，运行在独立 Linux 主机。
+external_mcp:
+  servers:
+    arl:
+      type: http
+      url: http://45.136.13.51:8765/mcp
+      timeout: 30
+      external_mcp_enable: true
+      tool_enabled:
+        arl_submit_batch: true
+        arl_api_catalog: true
+        arl_task_status: true
+        arl_submit_async: true
+        arl_submit_scan: true
+        arl_health: true
+        arl_api_request: true
+        arl_cancel_task: true
+        arl_list_tasks: true
+mcp:
+  enabled: false
+  host: ""
+  port: 0
+c2:
+  enabled: true
+security:
+  tools_dir: tools-v3
+  tool_description_mode: short
+knowledge:
+  # 已启用。只有 /api/experience 中 verified 或 human_confirmed 的条目
+  # 才会被允许晋级到 knowledge_base/经验库，pending 永不参与长期检索。
+  enabled: true
+  base_path: knowledge_base
+  embedding:
+    provider: openai
+    model: text-embedding-3-small
+    base_url: https://api.dddai.dev/v1
+    api_key: ${PROVENA_API_KEY}
+  retrieval:
+    # 本地词法检索：不依赖供应商 embedding 接口，长期经验仍由验证门控。
+    mode: lexical
+    top_k: 5
+    similarity_threshold: 0.7
+    sub_index_filter: ""
+    multi_query:
+      max_queries: 4
+    rerank:
+      provider: ""
+      model: ""
+      base_url: ""
+      api_key: ""
+    post_retrieve:
+      prefetch_top_k: 20
+      max_context_chars: 0
+      max_context_tokens: 0
+  indexing:
+    chunk_strategy: markdown_then_recursive
+    request_timeout_seconds: 120
+    chunk_size: 512
+    chunk_overlap: 50
+    max_chunks_per_item: 0
+    prefer_source_file: false
+    batch_size: 64
+    sub_indexes: []
+    max_rpm: 0
+    rate_limit_delay_ms: 300
+    max_retries: 3
+    retry_delay_ms: 1000
+project:
+  # 跨会话项目黑板，ARL/FGS 事实仍默认 tentative，不能由 Pi 写 confirmed。
+  enabled: true
+  default_project_id: fc7d2475-8871-486f-a864-5c50ed1a816d
+  fact_index_max_runes: 5000
+  fact_index_path_max_runes: 1500
+  fact_summary_max_runes: 300
+multi_agent:
+  enabled: false
+  robot_default_agent_mode: eino_single
+  batch_use_multi_agent: false
+  plan_execute_loop_max_iterations: 0
+  eino_middleware:
+    summarization_user_intent_ledger_max_runes: 96000
+    summarization_user_intent_ledger_entry_max_runes: 16000
+    latest_user_message_max_runes: 48000
+    latest_user_message_head_runes: 24000
+    latest_user_message_tail_runes: 24000
+    tool_search_always_visible_tools: []
+agent:
+  max_iterations: 3000
+  tool_timeout_minutes: 10
+  tool_wait_timeout_seconds: 60
+  external_mcp_max_concurrent_per_server: 8
+  external_mcp_max_concurrent_total: 16
+  workspace_root_dir: data/workspace-v3
+  external_mcp_circuit_failure_threshold: 0
+  external_mcp_circuit_cooldown_seconds: 0
+  system_prompt_path: ""
+ai:
+  default_channel: default
+  channels:
+    default:
+      name: Default
+      provider: openai_compatible
+      api_key: ${PROVENA_API_KEY}
+      base_url: https://api.dddai.dev/v1
+      model: gemini-3.8-flash
+      max_total_tokens: 120000
+      max_completion_tokens: 32768
+      reasoning:
+        mode: auto
+        effort: high
+        allow_client_reasoning: true
+        profile: auto
+pi_agent:
+  enabled: true
+  command: pi
+  harness_mode: fgs
+  harness_max_activities: 64
+  harness_worker_count: 3
+  # 单次 Decide/Execute Pi 活动的硬超时；总任务仍可等待 ARL 异步结果。
+  activity_timeout_seconds: 180
+  no_session: true
+  no_context_files: true
+  # Pi 底层显式加载 src-6k-skill；不加载其它 Skill。
+  no_skills: false
+  no_prompt_templates: true
+  no_extensions: true
+  # Pi 原生只读文件工具；不开放 bash/edit/write。
+  tools: [read, grep, find, ls]
+  provider: ""
+  model: ""
+  thinking: ""
+  working_dir: ""
+  session_dir: ""
+  supervisor:
+    enabled: true
+    command: ""
+    provider: ""
+    model: ""
+    thinking: minimal
+    interval_rounds: 1
+    timeout_seconds: 45
+    prompt: ""
+packet_capture:
+  enabled: true
+  host: 127.0.0.1
+  port: 9081
+  max_body_bytes: 33554432
+  send_full_to_pi: true
+  retention_days: 0
+  ca_path: ""
+  ca_key_path: ""
+  allowed_cidrs: []
+robots: {wechat: {enabled: false, bot_token: "", ilink_bot_id: "", ilink_user_id: "", base_url: 'https://ilinkai.weixin.qq.com', bot_type: "3", bot_agent: Provena/1.0}, wecom: {enabled: false, token: "", encoding_aes_key: "", corp_id: "", secret: "", agent_id: 0}, dingtalk: {enabled: false, client_id: "", client_secret: "", allow_conversation_id_fallback: false}, lark: {enabled: false, app_id: "", app_secret: "", verify_token: "", allow_chat_id_fallback: false}, telegram: {enabled: false, bot_token: "", bot_username: "", allow_group_messages: false}, slack: {enabled: false, bot_token: "", app_token: ""}, discord: {enabled: false, bot_token: "", allow_guild_messages: false}, qq: {enabled: false, app_id: "", client_secret: "", sandbox: false}}
+vision:
+  enabled: false
+  api_key: ""
+  base_url: ""
+  model: ""
+  timeout_seconds: 60
+  max_image_bytes: 5242880
+  max_dimension: 2048
+  jpeg_quality: 82
+  max_payload_bytes: 524288
+  skip_preprocess_below_bytes: 2097152
+  detail: low
+fofa:
+  base_url: ""
+  email: ""
+  api_key: ""
+zoomeye:
+  base_url: ""
+  api_key: ""
+quake:
+  base_url: ""
+  api_key: ""
+shodan:
+  base_url: ""
+  api_key: ""
+hitl:
+  audit_model:
+    provider: ""
+    base_url: ""
+    api_key: ""
+    model: ""
+  tool_whitelist: []
+  default_reviewer: human
+  retention_days: 90
+  audit_agent_prompt: ""
+  audit_agent_prompt_review_edit: ""
