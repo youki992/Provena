@@ -8,15 +8,14 @@
 
 [中文](README_CN.md) | [English](README.md)
 
-Provena 把一句自然语言目标，转化为针对单个授权目标的有界、可审计测试。每次运行都把
-状态保存在只追加的 **Fact/Intent 图**中，并输出一份可以直接交给复核人的报告。
+Provena 把一句自然语言目标，转化为针对单个授权目标的有界、可审计安全测试。一次运行会
+驱动 Pi harness 走一条 fact/intent 图：模型决定下一步做什么，Provena 负责执行工具，每一
+条观察都记录进只追加的图里，最终回放成报告。
 
-项目以 Go 编写，融合 Eino 智能体、MCP 原生工具、RAG 知识与攻击链建模，面向已获得明确
-授权的安全任务。
+项目以 Go 编写，产出单个二进制。工具以 YAML 配方声明、通过 MCP 调用，因此同一个智能体
+既能调用本地扫描器，也能调用远端 MCP 服务或 Provena 内置工具。
 
-**本仓库只包含命令行功能。** 没有 Web 控制台，也没有 HTTP 服务：二进制中没有 `serve`
-子命令、不注册任何路由。运行期唯一会打开的套接字，是内置 Pi 桥在 `127.0.0.1` 上绑定的
-一个临时回环端口，用于把工具调用交给智能体；不会监听任何对外网卡。
+本仓库是命令行工具：`chat`、`run`、`doctor`、`init`、`config`、`version`。
 
 > [!IMPORTANT]
 > 仅可对自有系统或已获得明确授权的目标使用 Provena。
@@ -27,8 +26,11 @@ Provena 把一句自然语言目标，转化为针对单个授权目标的有界
 | | |
 | --- | --- |
 | **Go** | 1.25 及以上（以 `go.mod` 为准） |
-| **Python** | 3.10 及以上 —— 仅 Python 类工具需要 |
+| **Pi** | `pi` 命令行工具，需在 `PATH` 中。Provena 把它作为智能体运行时驱动（`pi --mode rpc`）；可用 `pi_agent.command` 指定其他可执行文件。 |
 | **模型** | 任意兼容 OpenAI 协议的对话接口 |
+| **Python** | 3.10 及以上 —— 仅 Python 类工具需要 |
+
+`provena doctor` 会在真正跑任务前把这四项都检查一遍。
 
 ## 构建
 
@@ -81,7 +83,7 @@ ai:
 | --- | --- |
 | `provena chat` | 交互式多轮会话，可打断、可恢复 |
 | `provena run` | 针对单个目标的有界无头测试 |
-| `provena doctor` | 检查配置、模型凭证、python 与 MCP 服务器 |
+| `provena doctor` | 检查配置、模型凭证、pi、python 与 MCP 服务器 |
 | `provena init` | 由内置示例生成 `config.yaml` |
 | `provena config validate` | 校验配置文件 |
 | `provena version` | 打印版本号 |
@@ -159,18 +161,19 @@ tools/bin/<工具名>/<平台>/<工具名>[.exe]
 
 其中 `<平台>` 在 Windows 上是 `windows-amd64`，在 Linux 上是 `linux-amd64`。
 
-| 工具 | 定义文件 | 期望路径（Linux / Windows） |
-| --- | --- | --- |
-| `amass` | `tools/amass.yaml` | `tools/bin/amass/<平台>/amass` / `amass.exe` |
-| `subfinder` | `tools/subfinder.yaml` | `tools/bin/subfinder/<平台>/subfinder` / `.exe` |
-| `ffuf` | `tools/ffuf.yaml` | `tools/bin/ffuf/<平台>/ffuf` / `.exe` |
-| `gau` | `tools/gau.yaml` | `tools/bin/gau/<平台>/gau` / `.exe` |
-| `katana` | `tools/katana.yaml` | `tools/bin/katana/<平台>/katana` / `.exe` |
-| `waybackurls` | `tools/waybackurls.yaml` | `tools/bin/waybackurls/<平台>/waybackurls` / `.exe` |
-| `dddd` | `tools/dddd.yaml` | `tools/bin/dddd/<平台>/dddd` / `.exe` |
-| `nmap` | `tools/nmap.yaml` | `tools/bin/nmap/<平台>/nmap` / `.exe` |
+| 工具 | 定义文件 | 期望路径 | 上游来源 |
+| --- | --- | --- | --- |
+| `amass` | `tools/amass.yaml` | `tools/bin/amass/<平台>/amass[.exe]` | `owasp-amass/amass` |
+| `subfinder` | `tools/subfinder.yaml` | `tools/bin/subfinder/<平台>/subfinder[.exe]` | `projectdiscovery/subfinder` |
+| `ffuf` | `tools/ffuf.yaml` | `tools/bin/ffuf/<平台>/ffuf[.exe]` | `ffuf/ffuf` |
+| `gau` | `tools/gau.yaml` | `tools/bin/gau/<平台>/gau[.exe]` | `lc/gau` |
+| `katana` | `tools/katana.yaml` | `tools/bin/katana/<平台>/katana[.exe]` | `projectdiscovery/katana` |
+| `waybackurls` | `tools/waybackurls.yaml` | `tools/bin/waybackurls/<平台>/waybackurls[.exe]` | `tomnomnom/waybackurls` |
+| `nmap` | `tools/nmap.yaml` | 不是「丢一个文件进去」就完事 —— 见下文 | 自行安装 |
+| `dddd` | `tools/dddd.yaml` | `tools/bin/dddd/<平台>/dddd[.exe]` | 未公开分发 |
 
-以 Linux 上的 ffuf 为例：
+前 6 个都是常见的开源 Release：到对应项目的 Release 页面下载你的平台包，把可执行文件拷到
+上面的路径即可。以 Linux 上的 ffuf 为例：
 
 ```bash
 mkdir -p tools/bin/ffuf/linux-amd64
@@ -179,10 +182,19 @@ cp ffuf tools/bin/ffuf/linux-amd64/ffuf
 chmod +x tools/bin/ffuf/linux-amd64/ffuf
 ```
 
+后两个不一样：
+
+- **`nmap` 不是可以直接丢进去的单个文件。** Windows 上请正常安装 Nmap：查找器会先看
+  `%ProgramFiles%\Nmap\nmap.exe` 和 `%ProgramFiles(x86)%\Nmap\nmap.exe`，再退回
+  `tools/bin/nmap/windows-amd64/nmap.exe`。Linux 上查找器只看
+  `tools/bin/nmap/linux-amd64/nmap`，所以要么把二进制拷到那里，要么改配方直接调用系统
+  安装的 nmap —— 在 `tools/nmap.yaml` 里把 `command` 改成 `"nmap"`，并去掉 `args` 中的
+  `tools/bundled_tool.py` 相关项。
+- **`dddd` 下载不到。** 它没有公开分发，所以给不出 Release 链接。Provena 会到
+  `tools/bin/dddd/<平台>/dddd[.exe]` 找它，找不到就跳过该工具 —— 除非你自己提供这个二进制。
+
 查找顺序与例外：
 
-- **Windows 上的 nmap** —— 会优先尝试 `%ProgramFiles%\Nmap\nmap.exe` 与
-  `%ProgramFiles(x86)%\Nmap\nmap.exe`，因此用官方安装包装出来的 Nmap 可直接使用。
 - **katana** —— 也接受 `tools/bin/dddd/<平台>/WIHscan-1.0/katana[.exe]`。
 - **旧版 Windows 布局** —— `tools/bin/<工具名>/<工具名>.exe` 仍然可以解析。
 - **二进制缺失** —— 运行不会失败。工具会列出它检查过的全部路径，智能体跳过该工具继续执行。

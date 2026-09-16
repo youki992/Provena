@@ -8,17 +8,17 @@
 
 [中文](README_CN.md) | [English](README.md)
 
-Provena turns a natural-language objective into a bounded, auditable test against one
-authorized target. Every run keeps its state in an append-only **Fact/Intent Graph** and
-writes a report you can hand to a reviewer.
+Provena turns a natural-language objective into a bounded, auditable security test against
+one authorized target. A run drives the Pi harness through a fact/intent graph: the model
+decides what to do next, Provena executes the tools, and every observation is recorded in an
+append-only graph that is replayed into the report.
 
-Written in Go, it combines an Eino-powered agent, MCP-native tools, RAG knowledge and
-attack-chain modelling for authorized security operations.
+It is written in Go and ships as a single binary. Tools are declared as YAML recipes and
+reached over MCP, so the same agent can call a local scanner, a remote MCP server or one of
+Provena's built-in helpers.
 
-**This repository ships the CLI only.** There is no web console and no HTTP server: the
-binary has no `serve` command and registers no routes. The only socket a run opens is an
-ephemeral loopback port on `127.0.0.1` that the built-in Pi bridge uses to hand tool calls
-to the agent; nothing listens on an external interface.
+This repository is the command-line tool: `chat`, `run`, `doctor`, `init`, `config` and
+`version`.
 
 > [!IMPORTANT]
 > Use Provena only on systems you own or are explicitly authorized to test.
@@ -29,8 +29,11 @@ to the agent; nothing listens on an external interface.
 | | |
 | --- | --- |
 | **Go** | 1.25 or newer (see `go.mod`) |
-| **Python** | 3.10 or newer — only for the Python-backed tools |
+| **Pi** | the `pi` CLI on `PATH`. Provena drives it as the agent runtime (`pi --mode rpc`); set `pi_agent.command` to use a different executable. |
 | **Model** | any OpenAI-compatible chat endpoint |
+| **Python** | 3.10 or newer — only for the Python-backed tools |
+
+`provena doctor` checks all four before a run does any work.
 
 ## Build
 
@@ -83,7 +86,7 @@ model. Use them before spending tokens.
 | --- | --- |
 | `provena chat` | Interactive multi-turn session; interruptible and resumable |
 | `provena run` | Bounded, headless test against one target |
-| `provena doctor` | Check config, model credentials, python and MCP servers |
+| `provena doctor` | Check config, model credentials, pi, python and MCP servers |
 | `provena init` | Create `config.yaml` from the bundled example |
 | `provena config validate` | Validate the configuration file |
 | `provena version` | Print the version |
@@ -165,18 +168,19 @@ tools/bin/<tool>/<platform>/<tool>[.exe]
 
 where `<platform>` is `windows-amd64` on Windows and `linux-amd64` on Linux.
 
-| Tool | Definition | Expected path (Linux / Windows) |
-| --- | --- | --- |
-| `amass` | `tools/amass.yaml` | `tools/bin/amass/<platform>/amass` / `amass.exe` |
-| `subfinder` | `tools/subfinder.yaml` | `tools/bin/subfinder/<platform>/subfinder` / `.exe` |
-| `ffuf` | `tools/ffuf.yaml` | `tools/bin/ffuf/<platform>/ffuf` / `.exe` |
-| `gau` | `tools/gau.yaml` | `tools/bin/gau/<platform>/gau` / `.exe` |
-| `katana` | `tools/katana.yaml` | `tools/bin/katana/<platform>/katana` / `.exe` |
-| `waybackurls` | `tools/waybackurls.yaml` | `tools/bin/waybackurls/<platform>/waybackurls` / `.exe` |
-| `dddd` | `tools/dddd.yaml` | `tools/bin/dddd/<platform>/dddd` / `.exe` |
-| `nmap` | `tools/nmap.yaml` | `tools/bin/nmap/<platform>/nmap` / `.exe` |
+| Tool | Definition | Expected path | Upstream |
+| --- | --- | --- | --- |
+| `amass` | `tools/amass.yaml` | `tools/bin/amass/<platform>/amass[.exe]` | `owasp-amass/amass` |
+| `subfinder` | `tools/subfinder.yaml` | `tools/bin/subfinder/<platform>/subfinder[.exe]` | `projectdiscovery/subfinder` |
+| `ffuf` | `tools/ffuf.yaml` | `tools/bin/ffuf/<platform>/ffuf[.exe]` | `ffuf/ffuf` |
+| `gau` | `tools/gau.yaml` | `tools/bin/gau/<platform>/gau[.exe]` | `lc/gau` |
+| `katana` | `tools/katana.yaml` | `tools/bin/katana/<platform>/katana[.exe]` | `projectdiscovery/katana` |
+| `waybackurls` | `tools/waybackurls.yaml` | `tools/bin/waybackurls/<platform>/waybackurls[.exe]` | `tomnomnom/waybackurls` |
+| `nmap` | `tools/nmap.yaml` | not a drop-in binary — see below | install it |
+| `dddd` | `tools/dddd.yaml` | `tools/bin/dddd/<platform>/dddd[.exe]` | not publicly distributed |
 
-For example, on Linux:
+The first six are ordinary open-source releases: grab the archive for your platform from the
+project's release page and copy the executable to the path above. For example, on Linux:
 
 ```bash
 mkdir -p tools/bin/ffuf/linux-amd64
@@ -185,10 +189,20 @@ cp ffuf tools/bin/ffuf/linux-amd64/ffuf
 chmod +x tools/bin/ffuf/linux-amd64/ffuf
 ```
 
+The last two are different:
+
+- **`nmap` is not something you drop in.** On Windows, install Nmap normally: the launcher
+  checks `%ProgramFiles%\Nmap\nmap.exe` and `%ProgramFiles(x86)%\Nmap\nmap.exe` before
+  `tools/bin/nmap/windows-amd64/nmap.exe`. On Linux the launcher only looks at
+  `tools/bin/nmap/linux-amd64/nmap`, so either copy the binary there or point the recipe at
+  your system install — set `command: "nmap"` and drop the `tools/bundled_tool.py` entries
+  from `args` in `tools/nmap.yaml`.
+- **`dddd` cannot be downloaded.** It is not publicly distributed, so there is no release to
+  link. Provena looks for `tools/bin/dddd/<platform>/dddd[.exe]` and simply skips the tool
+  unless you supply that binary yourself.
+
 Resolution order and exceptions:
 
-- **nmap on Windows** — `%ProgramFiles%\Nmap\nmap.exe` and `%ProgramFiles(x86)%\Nmap\nmap.exe`
-  are tried before `tools/bin/nmap/windows-amd64/nmap.exe`, so a normal Nmap installer works.
 - **katana** — `tools/bin/dddd/<platform>/WIHscan-1.0/katana[.exe]` is also accepted.
 - **Legacy Windows layout** — `tools/bin/<tool>/<tool>.exe` still resolves.
 - **Missing binary** — the run does not fail. The tool reports every path it checked and the
