@@ -84,7 +84,7 @@ ai:
 | 命令 | 作用 |
 | --- | --- |
 | `provena chat` | 交互式多轮会话，可打断、可恢复 |
-| `provena run` | 针对单个目标的有界无头测试 |
+| `provena run` | 针对单个目标的有界命令行测试 |
 | `provena doctor` | 检查配置、模型凭证、pi、python 与 MCP 服务器 |
 | `provena init` | 由内置示例生成 `config.yaml` |
 | `provena config validate` | 校验配置文件 |
@@ -111,7 +111,7 @@ provena chat --continue        # 接着最近一次会话继续
 
 第一次 `Ctrl+C` 中止当前轮并保留对话，第二次才退出。会话状态保存在 `data/sessions/<id>/`。
 
-## 无头运行
+## 命令行运行
 
 `provena run` 复用与 `chat` 相同的智能体内核，只是不再有交互提示：
 
@@ -194,7 +194,7 @@ chmod +x tools/bin/ffuf/linux-amd64/ffuf
 
 ### Python 类工具
 
-部分配方调用 `python` / `python3`，按 `PATH` 解析（Windows 上回退到 `py`）。建议创建虚拟
+部分配置调用 `python` / `python3`，按 `PATH` 解析（Windows 上回退到 `py`）。建议创建虚拟
 环境并安装共享依赖：
 
 ```bash
@@ -203,11 +203,11 @@ source venv/bin/activate          # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-`http-framework-test`、`api-fuzzer` 以及 ARL 系列配方都期望该环境已激活。
+`http-framework-test`、`api-fuzzer` 以及 ARL 系列工具都期望该环境已激活。
 
 ### 依赖全局安装的工具
 
-`tools/` 里 100+ 个配方中的大多数按名称调用命令，期望它在 `PATH` 上 —— 例如 nmap、
+`tools/` 里 100+ 个配置中的大多数按名称调用命令，期望它在 `PATH` 上 —— 例如 nmap、
 nikto、sqlmap、nuclei、gobuster、hydra、hashcat 等。请用包管理器或到上游安装：
 
 ```bash
@@ -234,7 +234,7 @@ Windows 上没有一条包管理器命令能覆盖它们：请逐个到各工具
 Provena/
 ├── cmd/provena/     # CLI 入口（main、chat、run、doctor、init、config）
 ├── internal/        # 智能体内核、FGS 图、MCP、工具、报告、安全执行器
-├── tools/           # YAML 工具配方 + bundled_tool.py 启动器
+├── tools/           # YAML 工具配置 + bundled_tool.py 启动器
 ├── roles/           # 角色配置（按场景的提示词与工具策略）
 ├── agents/          # 多代理 Markdown（orchestrator.md + 子代理）
 ├── docs/            # 专题文档
