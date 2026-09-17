@@ -2,7 +2,7 @@
 
 [中文](../zh-CN/testing.md)
 
-Testing Provena means more than running Go tests. Agent, MCP, HITL, C2, WebShell, and frontend streaming all have different failure modes.
+Testing Provena means more than running Go tests. Agent, MCP, HITL and the report writers all have different failure modes.
 
 ## Commands
 
@@ -12,7 +12,6 @@ Both builds must pass — they compile different file sets:
 go test ./internal/...
 go test ./cmd/...
 go build -o provena ./cmd/provena                        # default: CLI-only
-go build -tags webconsole -o provena-web ./cmd/provena   # with the web console
 ```
 
 `internal/app` (`routes.go` / `routes_stub.go`) and `cmd/provena` (`serve.go` / `serve_stub.go`)
@@ -44,7 +43,6 @@ The second turn must recall the token; after `/new` the third turn must not.
 | Handler | HTTP behavior | validation, auth, status codes |
 | Integration | module cooperation | external MCP, KB indexing, HITL |
 | Smoke | user path | login, chat, tools, settings |
-| Authorized lab | high-risk features | C2, WebShell, terminal |
 
 Do not use end-to-end manual testing as a substitute for unit tests, or unit tests as a substitute for high-risk lab validation.
 
@@ -52,11 +50,9 @@ Do not use end-to-end manual testing as a substitute for unit tests, or unit tes
 
 Expand testing when changing:
 
-- `internal/handler/config.go`: model, KB, MCP, C2, robot apply paths;
 - `internal/multiagent/`: streaming, tool calls, summarization, retry, HITL;
 - `internal/security/`: auth, shell, timeout, no-output;
 - `internal/database/`: old data compatibility;
-- `web/static/js/chat.js`: chat, process details, attack chain, groups.
 
 ## Test Data
 
@@ -65,7 +61,7 @@ Avoid real customer data. Prepare:
 - small Markdown KB sample;
 - fake local MCP server;
 - controlled local HTTP target;
-- harmless WebShell simulator;
+- a harmless local MCP server;
 - temporary SQLite DB.
 
 ## Failure Cases
@@ -78,8 +74,6 @@ Cover:
 - HITL rejection;
 - interrupted KB indexing;
 - unwritable database;
-- WebShell non-200 response;
-- C2 disabled endpoint access.
 
 ## Source Anchors
 

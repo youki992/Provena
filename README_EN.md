@@ -281,9 +281,6 @@ servers), `data/` (run state, database, sessions) and `config.yaml`.
 - **Extending:** [skills guide](docs/en-US/skills-guide.md) → [tool execution governance](docs/en-US/tool-execution-governance.md)
 - **All topics:** [English documentation](docs/en-US/README.md) · [双语文档索引](docs/README.md)
 
-Some documents under `docs/` were written for the former web console and still describe
-screens that are not part of this build. Treat the CLI sections as authoritative.
-
 ## License
 
 Provena is licensed under the Apache License 2.0. See [LICENSE](LICENSE).

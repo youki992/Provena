@@ -41,7 +41,7 @@ enabled: true
 
 需要让角色自动使用网络空间测绘时，再加入 **`search_space_assets`**；它会按参数选择 FOFA、ZoomEye、Quake 或 Shodan，API 密钥由服务器配置管理。
 
-按需还可加入 WebShell、批量任务等其它内置或外部工具（以 MCP 管理中已启用的为准）。
+按需还可加入其它内置或外部工具。
 
 **Skills（技能包）**：`skills_dir` 下的技能包由多代理会话中的内置 **`skill`** 工具按需加载，与角色 YAML 无绑定关系。
 

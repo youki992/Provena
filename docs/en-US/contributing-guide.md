@@ -67,7 +67,7 @@ For YAML tools and Go MCP tools:
 
 ## High-Risk Capability Checklist
 
-High-risk includes Shell, WebShell, C2, external MCP write/execute, credential access, and bulk scanning.
+High-risk includes shell execution, payload generation, external MCP write/execute, credential access, and bulk scanning.
 
 Answer:
 

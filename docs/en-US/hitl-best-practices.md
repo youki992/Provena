@@ -100,8 +100,6 @@ Avoid globally allowlisting:
 
 - Arbitrary shell execution tools
 - File write/delete tools
-- C2 task tools
-- WebShell command execution tools
 
 ## Mode Selection
 

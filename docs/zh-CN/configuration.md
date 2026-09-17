@@ -21,7 +21,7 @@ log:
   output: stdout
 ```
 
-- `version`：前端展示版本。
+- `version`：版本号。
 - `server.host/port`：Web 服务监听地址和端口。
 - `server.tls_*`：HTTPS 配置。生产环境建议使用 `tls_cert_path` 和 `tls_key_path`。
 - Chromium 浏览器插件的合法 `chrome-extension://<32位插件ID>` Origin 会被自动识别，无需配置。插件仍需按域授权，并使用密码登录与 Bearer Token 调用 API。
@@ -62,9 +62,9 @@ ai:
 
 | 字段 | 说明 |
 | --- | --- |
-| `ai.default_channel` | 默认通道 ID。新对话、机器人、批量任务和未显式选择通道的请求使用它。 |
+| `ai.default_channel` | 默认通道 ID。未显式选择通道的运行使用它。 |
 | `ai.channels.<id>` | 通道配置。ID 会归一化为小写、数字和短横线，例如 `Qwen_Max` 会变成 `qwen-max`。 |
-| `name` | Web UI 展示名。留空时使用通道 ID。 |
+| `name` | 展示名。留空时使用通道 ID。 |
 | `provider` | `openai_compatible` 或 `claude`。`openai_compatible` 会在运行时映射为 `openai`；`claude` 会桥接到 Anthropic Messages API。 |
 | `base_url/api_key/model` | 必填。Base URL 通常需要包含版本路径，如 OpenAI/兼容网关的 `/v1`。 |
 | `max_total_tokens` | 上下文压缩、攻击链构建、多代理摘要等共用的总预算。 |
@@ -131,7 +131,7 @@ curl -s -o /dev/null -w "%{http_code}\n" -X POST https://host/v1/chat/completion
 ### 改配置会影响哪个文件
 
 Web 设置页保存时直接写回启动时 `-config` 指向的那个文件（默认 `config.yaml`），并先把
-原文件复制一份到 `config.yaml.backup`。所以命令行和 Web UI 改的是同一份配置，不存在
+原文件复制一份到 `config.yaml.backup`。配置只在下次运行时生效，不存在
 “UI 改了但 `provena run` 读不到”的情况；反之手改 YAML 后也需要在 UI 里重新加载，
 否则页面上显示的仍是旧值。
 
@@ -180,28 +180,6 @@ hitl:
 - `audit_agent_prompt` / `audit_agent_prompt_review_edit`：可覆盖默认审批策略。
 
 更多策略见 [人机协同最佳实践](hitl-best-practices.md)。
-
-## 多代理
-
-```yaml
-multi_agent:
-  enabled: true
-  robot_default_agent_mode: eino_single
-  batch_use_multi_agent: false
-  eino_skills:
-    disable: false
-    filesystem_tools: true
-    skill_tool_name: skill
-```
-
-支持模式：
-
-- `eino_single`：Eino 单代理。
-- `deep`：DeepAgent 风格多代理。
-- `plan_execute`：规划、执行、重规划。
-- `supervisor`：主管代理转交子代理。
-
-`agents_dir` 指向 Markdown 子代理目录。单个代理可在 front matter 中设置 `tools`、`bind_role`、`max_iterations`。
 
 ## 工具与 MCP
 
@@ -273,40 +251,21 @@ monitor:
 - `audit` 记录平台操作，不记录对话正文和每次工具调用正文。
 - `monitor` 管理工具执行记录保留时间。
 
-## C2、WebShell、项目
-
-```yaml
-c2:
-  enabled: true
-project:
-  enabled: true
-  fact_index_max_runes: 65000
-```
-
-- `c2.enabled`：关闭后不启动 C2 监听器，也不注册 C2 MCP 工具。
-- WebShell 连接配置存 SQLite，没有单独的主配置开关。
-- `project` 控制跨对话事实黑板注入预算。
-
-## 机器人
-
-`robots` 支持个人微信 iLink、企业微信、钉钉、飞书、Telegram、Slack、Discord、QQ。
-
 ## 配置修改建议
 
 - 先在测试环境验证模型、MCP、知识库和高风险工具。
 - 改动 `tools_dir`、`roles_dir`、`skills_dir`、`agents_dir` 后，检查 Web 页面是否能列出对应资源。
-- 生产环境避免开启不需要的 C2、WebShell、终端和外部 MCP。
+- 避免开启不需要的外部 MCP。
 - 修改敏感配置后，检查审计页面是否有异常登录或配置变更记录。
 
 ## 配置应用机制
 
-配置不是所有字段都同等“热更新”。`/api/config/apply` 会做一组协调动作：更新模型配置、工具描述模式、重新注册部分 MCP 工具、初始化或更新知识库、重启机器人连接、按配置启停 C2。这个逻辑在 `internal/handler/config.go` 中由 `ConfigHandler` 协调。
 
 实务判断：
 
 | 配置段 | 应用后通常立即生效 | 需要额外动作 |
 | --- | --- | --- |
-| `ai.default_channel` / `ai.channels` | 新请求使用解析后的默认或选定通道 | 旧的流式请求不会被强制切换；前端通道列表需要重新读取配置 |
+| `ai.default_channel` / `ai.channels` | 新请求使用解析后的默认或选定通道 | 正在运行的任务不会被强制切换 |
 | `openai` | 兼容字段；通常由默认 AI 通道同步 | 新配置优先维护 `ai.channels` |
 | `agent.max_iterations` | 新 Agent 任务生效 | 已运行任务按启动时状态继续 |
 | `security.tool_description_mode` | 工具重新暴露时生效 | 模型已有上下文不会回滚 |
@@ -314,7 +273,6 @@ project:
 | `knowledge.enabled` | 会尝试初始化/更新组件 | 启用后仍需扫描和索引 |
 | `knowledge.embedding` | 检索器/索引器配置更新 | 已有向量通常需要重建索引 |
 | `robots` | 会触发连接重启 | 平台回调配置仍需在平台侧正确 |
-| `c2.enabled` | 会协调 C2 runtime | 已暴露端口和会话要人工确认 |
 | `server.port/tls` | 通常需要重启进程 | 监听地址不是普通热更新 |
 
 ## 配置优先级和派生关系
@@ -357,11 +315,10 @@ project:
 修改后验证：
 
 ```bash
-curl -k https://127.0.0.1:8080/api/auth/validate \
   -H "Authorization: Bearer <token>"
 ```
 
-再按配置类型验证模型、工具、知识库、C2 或机器人。不要只看 Web 保存成功提示。
+再按配置类型验证模型、工具或知识库。
 
 ## 源码锚点
 
@@ -369,4 +326,3 @@ curl -k https://127.0.0.1:8080/api/auth/validate \
 - 环境变量展开：`internal/config/envexpand.go`
 - Web 配置接口：`internal/handler/config.go`
 - 路由注册：`internal/app/routes.go`（`setupRoutes`）
-- C2 配置协调：`internal/app/c2_lifecycle.go`

@@ -10,37 +10,10 @@ Web 服务内部会创建 MCP Server，并注册：
 - 内置安全执行工具。
 - 知识库工具。
 - 项目事实工具。
-- C2 工具。
-- WebShell 工具。
 - 批量任务工具。
 - 视觉分析工具。
 
-前端和 Agent 通常通过应用内部调用，不需要额外配置。
-
-## HTTP MCP 服务
-
-配置：
-
-```yaml
-mcp:
-  enabled: true
-  host: 0.0.0.0
-  port: 8081
-  auth_header: "X-MCP-Token"
-  auth_header_value: "random-secret"
-```
-
-生产环境必须设置 `auth_header_value`，并限制网络访问。
-
-## Web 内 MCP 端点
-
-登录后可通过：
-
-```text
-POST /api/mcp
-```
-
-该端点复用 Web 认证，适合内部页面或受控集成。
+内置 MCP 由 Provena 自己在运行期调用，不需要额外配置。
 
 ## 外部 MCP
 
@@ -55,15 +28,6 @@ external_mcp:
 
 接口：
 
-- `GET /api/external-mcp`
-- `GET /api/external-mcp/stats`
-- `GET /api/external-mcp/:name`
-- `PUT /api/external-mcp/:name`
-- `POST /api/external-mcp/:name/start`
-- `POST /api/external-mcp/:name/stop`
-- `POST /api/external-mcp/:name/validate`：真实执行 handshake + `tools/list`，返回工具 schema
-- `POST /api/external-mcp/:name/test`：使用 JSON 参数调用一个已发现的工具
-- `DELETE /api/external-mcp/:name`
 
 管理页面提供“验证”和“保存并验证”按钮。验证成功后会展示工具列表、参数 schema 和耗时；选择具体工具后可填写 JSON 参数进行实际调用。配置错误、连接失败、握手失败、`tools/list` 为空都会单独显示原因。
 
@@ -124,7 +88,6 @@ multi_agent:
 
 排查顺序：
 
-1. `/api/external-mcp/stats` 查看状态。
 2. 检查服务日志。
 3. 单独运行 stdio 命令。
 4. 用 curl 测试 HTTP/SSE 地址。

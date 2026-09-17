@@ -30,13 +30,13 @@ agent:
   tool_timeout_minutes: 60
 ```
 
-Change the initial `admin` password from the Web UI after first login. Use HTTPS or a trusted reverse proxy in any shared environment.
+Edit `ai.channels` in `config.yaml` and confirm it with `provena doctor`.
 
 Valid Chromium `chrome-extension://<32-character-extension-id>` origins are recognized automatically. The extension must still obtain host permission and authenticate with a password and Bearer token. `server.cors_allowed_origins` remains available as an exact allowlist for other trusted Web integrations; wildcards are not accepted, and changing it requires a restart.
 
 ## AI Channels
 
-`ai` is the recommended model configuration entry. In the Web UI, use **System Settings → Basic Settings → AI Channel Configuration**. Saving that form writes `ai.default_channel` and `ai.channels`. The legacy `openai` field remains as a backward-compatible runtime field; on load, Provena ensures a default channel exists and synchronizes the resolved `ai.default_channel` into runtime `openai`.
+`ai` is the model configuration entry: `ai.default_channel` plus one or more `ai.channels.<id>` blocks, each with `api_key`, `base_url` and `model`. The legacy `openai` field remains as a backward-compatible runtime field.
 
 ```yaml
 ai:
@@ -67,7 +67,7 @@ ai:
 | --- | --- |
 | `ai.default_channel` | Default channel ID for new conversations and requests without an explicit channel. |
 | `ai.channels.<id>` | Channel config. IDs are normalized to lowercase letters, digits, and hyphens. |
-| `name` | Display name in the Web UI; falls back to the ID. |
+| `name` | Display name; falls back to the ID. |
 | `provider` | `openai_compatible` or `claude`. OpenAI-compatible channels map to runtime `openai`; Claude channels bridge to Anthropic Messages API. |
 | `base_url/api_key/model` | Required. Base URL usually includes a version path such as `/v1`. |
 | `max_total_tokens` | Shared context budget for compression, attack-chain generation, multi-agent summaries, and similar paths. |
@@ -98,7 +98,7 @@ export PROVENA_API_KEY="sk-..."
 Two rules that are easy to get wrong:
 
 - An **unset variable expands to an empty string** — no error, no fallback. `provena doctor` reports such a channel as `api_key is empty`; `serve` / `run` only fail once a model is actually called. Run `provena doctor -config config.yaml` after editing.
-- Placeholders are expanded at **runtime**, and the file keeps the literal text. Saving a channel from the Web UI leaves untouched fields as `${PROVENA_API_KEY}` instead of writing a plaintext key; fields you retype in the form are saved with the new value.
+- Placeholders are expanded at **runtime**; the file keeps the literal `${VAR}` text, so `config.yaml` never has to hold a plaintext key.
 
 ### base_url must keep its version path
 
@@ -125,9 +125,8 @@ curl -s -o /dev/null -w "%{http_code}\n" -X POST https://host/v1/chat/completion
 
 ### Which file a config change affects
 
-Saving from the Web UI writes back to the file passed as `-config` at startup (default `config.yaml`), after copying the original to `config.yaml.backup`. The command line and the Web UI therefore edit the same file, so a UI change is never invisible to `provena run`; conversely, after editing the YAML by hand, reload it in the UI.
+A config change takes effect on the next `provena run` or `provena chat`; there is no live reload.
 
-Common Web UI operations:
 
 - Add: click `+`, fill required fields, then save.
 - Set default: select a channel, click **Set as default**, then save/apply.
@@ -137,7 +136,6 @@ Common Web UI operations:
 
 ## Hot-Apply Boundaries
 
-`POST /api/config/apply` coordinates model config, tool description mode, MCP tool registration, knowledge components, robot restarts, and C2 runtime reconciliation. It does not make every field instantly effective.
 
 | Section | Usually hot-applies | Extra action |
 | --- | --- | --- |
@@ -148,7 +146,6 @@ Common Web UI operations:
 | `knowledge.enabled` | initializes/updates components | scan and index are still required |
 | `knowledge.embedding` | updates retriever/indexer config | rebuild index for existing vectors |
 | `robots` | restarts long-lived connections | platform callback settings must still match |
-| `c2.enabled` | reconciles C2 runtime | verify existing listeners/sessions manually |
 | `server.port/tls` | usually needs process restart | listener settings are not ordinary hot state |
 
 ## Fallback Relationships
@@ -193,4 +190,3 @@ After changing, validate the specific subsystem rather than trusting the save me
 - Env expansion: `internal/config/envexpand.go`
 - Config API and apply: `internal/handler/config.go`
 - Route registration: `internal/app/routes.go` (`setupRoutes`)
-- C2 reconciliation: `internal/app/c2_lifecycle.go`

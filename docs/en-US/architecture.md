@@ -2,7 +2,7 @@
 
 [中文](../zh-CN/architecture.md)
 
-Provena is a single Go Web application with a static frontend, SQLite persistence, Agent orchestration, MCP tooling, workflow graphs, knowledge retrieval, and optional C2/WebShell subsystems.
+Provena is a single Go binary: an MCP tool registry, agent orchestration, a fact/intent graph, knowledge retrieval, and optional C2/WebShell tool subsystems.
 
 ## Overview
 
@@ -17,27 +17,8 @@ flowchart LR
     M --> EM["External MCP"]
     A --> K["Knowledge Retrieval"]
     H --> W["Workflow Runtime"]
-    H --> C2["C2"]
-    H --> WS["WebShell"]
     H --> AU["Audit / Monitor"]
 ```
-
-## Request Path
-
-For `/api/eino-agent/stream`:
-
-1. Gin route enters auth middleware.
-2. Handler parses message, conversation, role, uploads, and WebShell context.
-3. Agent builds model input: history, role prompt, project facts, tools.
-4. Eino Runner calls the model.
-5. Tool requests go through MCP.
-6. HITL may interrupt before execution.
-7. Tool results are saved to process details and monitoring.
-8. Model continues and produces final text.
-9. SSE streams progress and deltas to the browser.
-10. Conversation and process details persist to SQLite.
-
-This explains why a failure may live in auth, config, model, MCP, HITL, DB, SSE, or frontend rendering.
 
 ## Cross-Cutting Modules
 
@@ -51,8 +32,6 @@ These are not just pages; they affect many runtime paths.
 
 ## Complexity Hotspots
 
-- `internal/app/app.go`: service construction; the route table lives in `internal/app/routes.go` (`setupRoutes`, `webconsole` build only).
-- `internal/handler/config.go`: hot application of config across model, KB, C2, robot, MCP.
 - `internal/multiagent/`: streaming, retry, summarization, middleware, tools.
 - `internal/security/`: auth and shell execution boundary.
 - `internal/database/`: SQLite schema compatibility.

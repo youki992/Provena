@@ -2,7 +2,7 @@
 
 [中文](../zh-CN/security-model.md)
 
-Provena is not a generic chatbot. It is a high-privilege security automation system with command execution, MCP tools, WebShell management, optional C2, batch tasks, and multi-agent orchestration.
+Provena is not a generic chatbot. It is a high-privilege command-line agent with shell execution, MCP tools, and optional C2/WebShell tool subsystems.
 
 ## Trust Boundaries
 
@@ -14,18 +14,15 @@ Main actors:
 - External MCP: third-party local or remote tool providers.
 - Robot callbacks: platform-authenticated message ingress outside Web login.
 
-Anyone who can log into the Web UI should be treated as an operator of the instance.
+Anyone who can run the binary has that power already: there is no login and no privilege boundary inside the tool.
 
 ## Threat Model
 
 | Threat | Path | Impact | Controls |
 | --- | --- | --- | --- |
-| Password leak | login, then use terminal/WebShell/C2 | platform takeover | strong password, HTTPS, internal network, audit |
 | Prompt injection | target content instructs Agent to misuse tools | unauthorized actions | role boundaries, HITL, least tools |
 | Malicious MCP | external tool lies or has side effects | host/target impact | trusted MCP only, isolation |
 | Tool YAML tampering | command template changed | malicious execution | file permissions, review |
-| C2 misuse | payload or task against unauthorized target | legal and business risk | disabled by default, approvals |
-| WebShell misuse | destructive command on business host | outage/data loss | naming, read-only first, HITL |
 | DB leak | copy `data/*.db` or uploads | sensitive target data | permissions, encrypted backups |
 
 ## HITL Is Not Magic
@@ -34,8 +31,6 @@ HITL sees a tool name, arguments, and context. It does not always see real-world
 
 - a harmless-looking command wraps `bash -c` or base64;
 - the MCP tool description is untrusted;
-- WebShell target identity is vague;
-- C2 payload delivery happens outside the platform;
 - a read-only tool can still create traffic or side effects.
 
 Audit Agent is useful for routine checks, not for replacing humans on destructive operations.
@@ -48,9 +43,9 @@ Avoid long-term storage of:
 - raw production data;
 - long-lived cookies;
 - unrelated scan output;
-- stale WebShell or C2 sessions.
+- report files and workspaces left behind by earlier runs.
 
-Project closeout should include cleanup of uploads, WebShell connections, C2 payloads, temporary workspaces, and bulky execution logs.
+Project closeout should include cleanup of uploads, temporary workspaces, and bulky execution logs.
 
 ## Production Baseline
 

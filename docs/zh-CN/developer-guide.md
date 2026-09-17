@@ -16,8 +16,6 @@ internal/workflow/       工作流运行时
 internal/knowledge/      知识库索引与检索
 internal/c2/             内置 C2
 internal/project/        项目事实黑板
-web/static/              前端 JS/CSS/资源
-web/templates/           HTML 模板
 tools/                   命令工具 YAML
 roles/                   角色 YAML
 agents/                  多代理 Markdown 定义
@@ -28,25 +26,10 @@ docs/                    项目文档
 ## 启动开发环境
 
 ```bash
-go run -tags webconsole ./cmd/provena serve --config config.yaml
 ```
 
-Web 控制台是可选构建，源码方式启动必须带 `webconsole` 标签；不带标签的产物是纯 CLI
 （`run` / `chat` / `doctor`），`serve` 会直接报错并提示如何重建。
 
-前端是静态页面，模板在 `web/templates/`，JS/CSS 在 `web/static/`。修改后刷新浏览器即可验证，多数场景不需要单独前端构建。
-
-## 路由
-
-路由集中在 `internal/app/routes.go` 的 `setupRoutes` 中（该文件带 `webconsole` 标签；
-纯 CLI 构建下由 `routes_stub.go` 的同签名空实现替代，一个路由都不注册）。新增业务接口通常需要：
-
-1. 在 `internal/handler/` 增加 Handler。
-2. 在 `internal/database/` 增加必要的数据访问。
-3. 在 `internal/app/routes.go` 的 `setupRoutes` 里注册路由；依赖在
-   `internal/app/app.go` 的 `New` 里构造，两侧参数列表必须一致。
-4. 如需对外文档，更新 `internal/handler/openapi.go`。
-5. 如需前端调用，更新 `web/static/js/`。
 
 ## 数据库
 
@@ -101,39 +84,9 @@ Skill 放在 `skills/<name>/SKILL.md`。用于提供专题能力、流程说明�
 - 高风险能力要接入 HITL 或至少有清晰审计。
 - 代码变更后运行相关包单测。
 
-## 新增业务模块的完整配方
-
-不要只加一个 Handler。完整模块通常要考虑：
-
-1. 数据模型：是否需要 SQLite 表和迁移。
-2. Handler：HTTP 参数、错误码、分页、过滤。
-3. Audit：管理动作是否要审计。
-4. Monitor：如果会执行长任务，是否要记录执行状态。
-5. MCP：是否要暴露给 Agent。
-6. HITL：MCP 工具是否有审批边界。
-7. OpenAPI：是否更新 `/api/openapi/spec`。
-8. Frontend：是否需要 i18n、状态、空态、错误提示。
-9. Tests：数据库、handler、边界条件。
-10. Docs：配置、使用、排错和安全影响。
-
-少做其中一项，后面通常会以“用户看不懂”“Agent 调错”“接口没人会用”的形式返工。
-
-## Handler 错误设计
-
-建议错误响应保持：
-
-```json
-{
-  "error": "machine_readable_code",
-  "message": "给用户看的说明"
-}
-```
-
-不要只返回 Go error 字符串。前端需要稳定字段，用户需要可操作建议，日志需要详细错误。
-
 ## 长任务设计
 
-扫描、索引、批量任务、C2 等都可能长时间运行。设计时要回答：
+扫描、索引、批量任务等都可能长时间运行。设计时要回答：
 
 - 是否能取消？
 - 是否能查询进度？
@@ -153,7 +106,6 @@ Skill 放在 `skills/<name>/SKILL.md`。用于提供专题能力、流程说明�
 - Shell 超时和无输出。
 - 外部 MCP 失败恢复。
 - 知识库索引和检索后处理。
-- WebShell 编码和系统识别。
 - SQLite 迁移兼容。
 
 这些地方比普通 getter/setter 更容易出现真实用户故障。

@@ -12,25 +12,10 @@ The internal MCP server registers:
 - security execution tools;
 - knowledge tools;
 - project fact tools;
-- C2 tools;
-- WebShell tools;
 - batch task tools;
 - vision analysis.
 
 Agents usually call these internally without extra setup.
-
-## HTTP MCP
-
-```yaml
-mcp:
-  enabled: true
-  host: 0.0.0.0
-  port: 8081
-  auth_header: "X-MCP-Token"
-  auth_header_value: "random-secret"
-```
-
-Always set an auth value and restrict network access.
 
 ## External MCP Lifecycle
 

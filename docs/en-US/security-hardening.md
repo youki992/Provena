@@ -6,35 +6,14 @@ This checklist covers pre-production and continuous hardening for Provena.
 
 ## Before Going Live
 
-- Change the initial `admin` password from the Web UI after first login.
-- Use HTTPS or a trusted reverse proxy.
+- Keep `config.yaml` readable only by you; it holds your model credentials.
+- Never commit `config.yaml`, `data/` or `tools/bin/`.
 - Restrict access by IP, VPN, or bastion.
 - Enable `audit.enabled`.
-- Set `c2.enabled: false` when C2 is not required.
+- Review every external MCP server before enabling it.
 - Do not expose standalone HTTP MCP without strong auth and network isolation.
 - Connect only trusted external MCP services.
 - Back up `config.yaml`, `data/`, and custom resource directories.
-
-## Reverse Proxy Baseline
-
-```nginx
-client_max_body_size 200m;
-proxy_buffering off;
-proxy_http_version 1.1;
-proxy_set_header Host $host;
-proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-proxy_set_header X-Forwarded-Proto https;
-proxy_set_header Upgrade $http_upgrade;
-proxy_set_header Connection "upgrade";
-```
-
-Recommended security headers:
-
-```nginx
-add_header X-Content-Type-Options nosniff;
-add_header Referrer-Policy no-referrer;
-add_header X-Frame-Options DENY;
-```
 
 ## HITL Allowlist Baseline
 
@@ -52,8 +31,6 @@ hitl:
 Do not globally allowlist:
 
 - `execute`;
-- WebShell write/execute tools;
-- C2 task/payload tools;
 - high-risk external MCP tools;
 - delete, write, upload, persistence tools.
 
@@ -83,22 +60,6 @@ After connecting:
 - review tool list changes;
 - audit config changes.
 
-## C2 and WebShell
-
-C2:
-
-- disabled by default;
-- enabled only during authorized window;
-- listener ports separated from admin UI;
-- cleanup payloads, sessions, tasks, and events.
-
-WebShell:
-
-- authorized targets only;
-- clear naming;
-- write/delete/execute requires approval;
-- delete connections after project end.
-
 ## Retention
 
 Suggested:
@@ -106,7 +67,7 @@ Suggested:
 - audit: 30-90 days;
 - monitor: 90-180 days;
 - uploads: clean after project;
-- C2/WebShell outputs: keep only report evidence;
+- Tool outputs: keep only what the report needs;
 - knowledge base: no real credentials or customer secrets.
 
 ## Periodic Review
@@ -117,8 +78,8 @@ Weekly:
 - config changes;
 - external MCP changes;
 - long-running tools;
-- unexpected C2 enablement;
-- stale WebShell connections;
+- unexpected external MCP servers;
+- report files left behind in `data/runs/`;
 - disk and DB size.
 
 Project closeout:
@@ -126,5 +87,5 @@ Project closeout:
 - clean temp workspaces;
 - delete unnecessary uploads;
 - archive evidence;
-- delete stale WebShell/C2 resources;
+- delete stale reports and workspaces.
 - export audit records.

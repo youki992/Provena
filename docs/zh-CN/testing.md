@@ -1,6 +1,6 @@
 # 测试指南
 
-Provena 的测试包括 Go 单测、配置验证、API 手测、MCP 工具验证和前端冒烟测试。
+Provena 的测试包括 Go 单测、配置验证、CLI 冒烟和 MCP 工具验证。
 
 ## Go 单测
 
@@ -35,7 +35,6 @@ go test ./internal/handler
 
 ```bash
 go build -o provena ./cmd/provena                        # 默认：纯 CLI
-go build -tags webconsole -o provena-web ./cmd/provena    # 带 Web 控制台
 ```
 
 `internal/app` 里 `routes.go` / `routes_stub.go` 和 `cmd/provena` 里
@@ -59,25 +58,6 @@ go build -tags webconsole -o provena-web ./cmd/provena    # 带 Web 控制台
 - 工具列表。
 - 外部 MCP 状态。
 
-## API 手测
-
-访问：
-
-```text
-/api-docs
-```
-
-重点验证：
-
-- 登录。
-- `/api/eino-agent/stream`。
-- `/api/config`。
-- `/api/config/tools`。
-- `/api/knowledge/search`。
-- `/api/monitor`。
-
-流式接口经过反向代理时要验证输出是否实时。
-
 ## 工具测试
 
 新增或修改 `tools/*.yaml` 后：
@@ -96,7 +76,6 @@ go build -tags webconsole -o provena-web ./cmd/provena    # 带 Web 控制台
 
 - stdio：先在终端独立运行命令。
 - HTTP/SSE：用 curl 检查连通性。
-- Web 页面启动后检查 `/api/external-mcp/stats`。
 - 在对话中确认工具是否可被 `tool_search` 找到。
 
 ## 知识库测试
@@ -111,27 +90,6 @@ go build -tags webconsole -o provena-web ./cmd/provena    # 带 Web 控制台
 
 如果使用真实 embedding API，注意配额和速率限制。
 
-## 前端冒烟
-
-修改前端后至少验证：
-
-- 登录和退出。
-- 侧边栏对话列表。
-- 新建对话和流式回复。
-- 设置页面保存。
-- 相关业务页面增删改查。
-- 中英文切换。
-- 浏览器控制台无明显错误。
-
-## 高风险模块测试
-
-C2、WebShell、终端、批量任务只能在授权测试环境验证。测试前确认：
-
-- 目标是本机、靶机或演练环境。
-- 命令无破坏性。
-- HITL 策略符合预期。
-- 测试后清理会话、payload、上传文件和任务结果。
-
 ## 测试金字塔
 
 建议测试分层：
@@ -142,7 +100,6 @@ C2、WebShell、终端、批量任务只能在授权测试环境验证。测试�
 | Handler 测试 | HTTP 行为 | 参数校验、状态码、权限 |
 | 集成测试 | 多模块协作 | 外部 MCP、知识库索引、HITL |
 | 冒烟测试 | 用户路径可用 | 登录、对话、工具、设置 |
-| 授权靶场测试 | 高风险能力安全 | C2、WebShell、终端 |
 
 不要用端到端手测代替单元测试，也不要用单元测试代替高风险靶场验证。
 
@@ -150,11 +107,9 @@ C2、WebShell、终端、批量任务只能在授权测试环境验证。测试�
 
 修改这些模块时必须扩大测试范围：
 
-- `internal/handler/config.go`：测模型、知识库、MCP、C2、机器人配置应用。
 - `internal/multiagent/`：测流式、工具调用、摘要、重试、HITL。
 - `internal/security/`：测认证、Shell、超时、无输出。
 - `internal/database/`：测旧数据兼容。
-- `web/static/js/chat.js`：测对话、过程详情、攻击链、分组。
 
 ## 测试数据管理
 
@@ -163,7 +118,7 @@ C2、WebShell、终端、批量任务只能在授权测试环境验证。测试�
 - 小型 Markdown 知识库样例。
 - 本地假 MCP Server。
 - 本地可控 HTTP 目标。
-- 无害 WebShell 模拟端。
+- 一个无害的本地 MCP 服务。
 - 临时 SQLite 数据库。
 
 测试完成后删除临时数据库和上传文件，避免污染开发环境。
@@ -178,8 +133,6 @@ C2、WebShell、终端、批量任务只能在授权测试环境验证。测试�
 - HITL 拒绝。
 - 知识库索引中断。
 - 数据库不可写。
-- WebShell 目标返回非 200。
-- C2 关闭时访问接口。
 
 这些才是用户真实会遇到的问题。
 

@@ -4,42 +4,48 @@
 
 ## Security Policy
 
-Provena is a security testing and automation platform. It can execute tools, call MCP servers, manage WebShell connections, and optionally run C2 workflows. Please treat every deployment as a high-privilege security system.
+Provena is a command-line security testing agent. It runs tools on your machine, calls MCP
+servers, and drives an external `pi` runtime that talks to your model provider. Treat it as a
+high-privilege tool: whatever it can reach, it can act on.
 
 ### Supported Versions
 
-This project does not currently maintain multiple long-term support branches. Security fixes are expected to land on the latest mainline release/source tree.
+This project does not currently maintain multiple long-term support branches. Security fixes
+are expected to land on the latest mainline release/source tree.
 
-If you are running an older version, please reproduce the issue against the latest code before reporting when possible.
+If you are running an older version, please reproduce the issue against the latest code
+before reporting when possible.
 
 ### Reporting a Vulnerability
 
-Please do not publicly disclose exploitable details before maintainers have had a reasonable chance to investigate.
+Please do not publicly disclose exploitable details before maintainers have had a reasonable
+chance to investigate.
 
 Preferred report contents:
 
 - affected version or commit;
-- deployment mode and relevant configuration;
+- how you built and ran it, plus the relevant configuration;
 - clear reproduction steps;
 - impact assessment;
-- affected component, such as auth, MCP, tool execution, WebShell, C2, knowledge base, frontend, or API;
-- whether the issue requires authentication;
+- affected component, such as tool execution, MCP wiring, the Pi bridge, the FGS graph, the
+  report writers, or the Python tool recipes;
+- whether the issue needs a model response to trigger;
 - suggested mitigation, if known.
 
-If the project repository has private vulnerability reporting enabled, use that channel. Otherwise, open a minimal public issue that states there is a security concern and avoid posting exploit details, credentials, target data, or weaponized payloads.
+If the project repository has private vulnerability reporting enabled, use that channel.
+Otherwise, open a minimal public issue that states there is a security concern and avoid
+posting exploit details, credentials, target data, or weaponized payloads.
 
 ### Scope
 
 In scope:
 
-- authentication and session handling issues;
-- authorization bypass in protected APIs;
-- unsafe command execution behavior;
-- unintended file read/write through tools or Skills;
+- unsafe command execution or argument handling in the built-in tools;
+- path traversal or unintended file read/write through tools or Skills;
 - external MCP trust-boundary flaws;
-- WebShell or C2 management vulnerabilities;
-- sensitive data leakage from logs, audit records, uploads, or APIs;
-- cross-site scripting or frontend injection in the Web UI;
+- the loopback Pi bridge accepting unauthenticated tool calls;
+- credentials or target data leaking into reports, logs or the FGS graph;
+- settings that silently disable a documented safety control;
 - security-impacting configuration handling bugs.
 
 Out of scope:
@@ -48,26 +54,27 @@ Out of scope:
 - denial-of-service testing against public services without permission;
 - social engineering, phishing, or credential theft;
 - issues caused only by intentionally disabling documented security controls;
-- vulnerabilities in third-party tools invoked by Provena, unless Provena makes them materially worse.
+- vulnerabilities in third-party tools invoked by Provena, unless Provena makes them
+  materially worse.
 
 ### Authorized Use Boundary
 
-Provena must only be used for education, research, and authorized security testing. Do not use it against systems without explicit permission.
+Provena must only be used for education, research, and authorized security testing. Do not use
+it against systems without explicit permission.
 
-High-risk capabilities such as Shell execution, WebShell management, C2, payload generation, external MCP tools, and batch scanning should be enabled only in controlled, authorized environments.
+High-risk capabilities such as shell execution, payload generation, external MCP tools, and
+bulk scanning should only be used in controlled, authorized environments.
 
-### Deployment Hardening
+### Operational Hardening
 
-Before production use:
+Before pointing it at anything real:
 
-- change the default password;
-- use HTTPS or a trusted reverse proxy;
-- restrict access by IP, VPN, or bastion;
-- enable audit logging;
-- keep C2 disabled unless explicitly needed;
-- review external MCP servers before enabling them;
-- keep high-risk tools out of global HITL allowlists;
-- back up `config.yaml`, `data/`, and custom resource directories.
+- keep `config.yaml` readable only by you — it holds your model credentials;
+- review every external MCP server before enabling it;
+- keep high-risk tools out of the global HITL allowlist;
+- treat `data/runs/<id>/` as sensitive: a report contains target data and tool output;
+- never commit `data/`, `config.yaml` or `tools/bin/`;
+- install scanner binaries from their upstream releases and check what you downloaded.
 
 See:
 
@@ -78,7 +85,8 @@ See:
 
 # 安全政策
 
-Provena 是一个安全测试与自动化平台。它可以执行工具、调用 MCP 服务、管理 WebShell 连接，并可选运行 C2 工作流。请把每个部署实例都视为高权限安全系统。
+Provena 是一个命令行安全测试智能体。它会在你的机器上执行工具、调用 MCP 服务，并驱动一个
+外部 `pi` 运行时与你的模型服务通信。请把它当作高权限工具：它能触达的资源，它就能操作。
 
 ## 支持版本
 
@@ -93,27 +101,26 @@ Provena 是一个安全测试与自动化平台。它可以执行工具、调用
 建议报告内容：
 
 - 受影响版本或 commit；
-- 部署方式和相关配置；
+- 你的构建与运行方式，以及相关配置；
 - 清晰复现步骤；
 - 影响评估；
-- 受影响组件，例如认证、MCP、工具执行、WebShell、C2、知识库、前端或 API；
-- 是否需要登录认证；
+- 受影响组件，例如工具执行、MCP 接线、Pi 桥、FGS 图、报告写出或 Python 工具配方；
+- 是否需要模型回复才能触发；
 - 已知缓解建议。
 
-如果仓库启用了私有漏洞报告，请优先使用该渠道。否则可以提交一个最小公开 Issue，说明存在安全问题，但不要发布利用细节、凭证、目标数据或武器化载荷。
+如果仓库启用了私有漏洞报告，请优先使用该渠道。否则可以提交一个最小公开 Issue，说明存在
+安全问题，但不要发布利用细节、凭证、目标数据或武器化载荷。
 
 ## 范围
 
 范围内：
 
-- 认证和会话处理问题；
-- 受保护 API 的授权绕过；
-- 不安全的命令执行行为；
-- 通过工具或 Skills 意外读写文件；
+- 内置工具中不安全的命令执行或参数处理；
+- 通过工具或 Skills 造成的路径穿越或意外读写文件；
 - 外部 MCP 信任边界问题；
-- WebShell 或 C2 管理漏洞；
-- 日志、审计、上传文件或 API 泄露敏感数据；
-- Web UI 的 XSS 或前端注入；
+- 回环 Pi 桥接受了未认证的工具调用；
+- 凭证或目标数据泄露进报告、日志或 FGS 图；
+- 静默关闭了文档化安全控制的配置项；
 - 影响安全的配置处理缺陷。
 
 范围外：
@@ -128,20 +135,19 @@ Provena 是一个安全测试与自动化平台。它可以执行工具、调用
 
 Provena 仅可用于教育、研究和授权安全测试。不要在没有明确授权的系统上使用。
 
-Shell 执行、WebShell 管理、C2、payload 生成、外部 MCP 工具、批量扫描等高风险能力，只应在受控且授权明确的环境中启用。
+Shell 执行、payload 生成、外部 MCP 工具、批量扫描等高风险能力，只应在受控且授权明确的
+环境中使用。
 
-## 部署加固
+## 运行加固
 
-生产使用前：
+在把它指向真实目标之前：
 
-- 修改默认密码；
-- 使用 HTTPS 或可信反向代理；
-- 通过 IP、VPN 或堡垒机限制访问；
-- 开启审计日志；
-- 不需要 C2 时保持关闭；
-- 启用外部 MCP 前进行审查；
+- `config.yaml` 只让自己可读 —— 里面是模型凭证；
+- 启用外部 MCP 前逐个审查；
 - 高风险工具不要加入全局 HITL 白名单；
-- 备份 `config.yaml`、`data/` 和自定义资源目录。
+- 把 `data/runs/<id>/` 当作敏感数据：报告里有目标信息和工具输出；
+- 不要提交 `data/`、`config.yaml`、`tools/bin/`；
+- 扫描器二进制从上游 Release 获取，并核对你下载的东西。
 
 参见：
 

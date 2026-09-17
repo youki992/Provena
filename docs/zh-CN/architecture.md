@@ -15,40 +15,8 @@ flowchart LR
     M --> EM["外部 MCP"]
     A --> K["知识库检索"]
     H --> W["Workflow 工作流"]
-    H --> C2["内置 C2"]
-    H --> WS["WebShell"]
     H --> AU["Audit / Monitor"]
 ```
-
-## Web 层
-
-入口在 `cmd/provena/`，应用组装在 `internal/app/`。Web 使用 Gin：
-
-- `web/templates/index.html`：主页面。
-- `web/templates/api-docs.html`：API 文档页面。
-- `web/static/js/`：各业务模块前端逻辑。
-- `web/static/css/`：样式。
-
-路由注册集中在 `internal/app/routes.go` 的 `setupRoutes`。该文件带 `webconsole` 标签，
-纯 CLI 构建下由 `routes_stub.go` 的同签名空实现替代，一个路由都不注册。
-
-## Handler 层
-
-`internal/handler/` 按业务拆分：
-
-- `agent.go`、`eino_single_agent.go`、`multi_agent.go`
-- `workflow.go`、`workflow_run.go`
-- `knowledge.go`
-- `webshell.go`
-- `c2.go`
-- `audit.go`
-- `monitor.go`
-- `project.go`
-- `vulnerability.go`
-- `config.go`
-- `openapi.go`
-
-Handler 负责参数解析、权限中间件后的业务协调和 HTTP 响应。
 
 ## Agent 层
 
@@ -99,7 +67,7 @@ MCP 相关：
 - 工具执行记录。
 - HITL 日志。
 - 知识库索引和检索日志。
-- WebShell、C2、项目、漏洞、批量任务等业务数据。
+- 漏洞、项目、任务等业务数据。
 
 默认数据库文件：
 
@@ -113,29 +81,10 @@ MCP 相关：
 高风险模块包括：
 
 - Terminal。
-- WebShell。
-- C2。
 - 外部 MCP。
 - 文件系统和 Shell Skills。
 
 这些模块应结合角色、HITL 和部署隔离使用。
-
-## 一次对话请求的真实路径
-
-以 `/api/eino-agent/stream` 为例：
-
-1. Gin 路由进入认证中间件。
-2. Handler 解析请求体、会话 ID、角色、附件和 WebShell 上下文。
-3. Agent 构建模型输入，包括历史消息、角色提示、项目事实、工具列表。
-4. Eino Runner 调用模型。
-5. 模型需要工具时走 MCP Tool。
-6. 工具调用前可能触发 HITL。
-7. 工具执行结果写入过程详情和监控。
-8. 模型继续推理并生成最终回答。
-9. SSE 将进度、工具事件、文本增量推给前端。
-10. 会话、消息、过程详情写入 SQLite。
-
-这个路径解释了为什么问题可能出在很多层：认证、会话、模型、工具、HITL、MCP、数据库、SSE 或前端渲染。
 
 ## 横向模块依赖
 
@@ -154,14 +103,13 @@ MCP 相关：
 维护时优先警惕：
 
 - `internal/app/app.go`：组装所有服务，容易引入初始化顺序问题。
-- `internal/handler/config.go`：热应用配置，影响模型、知识库、C2、机器人和 MCP。
 - `internal/multiagent/`：中间件多，流式、重试、摘要和工具调用交错。
 - `internal/security/`：Shell 和认证是安全边界。
 - `internal/database/`：SQLite 结构演进必须兼容旧数据。
 
 ## 设计取舍
 
-项目选择单体 Go 服务 + SQLite + 静态前端，是为了降低部署门槛。但代价是：
+项目选择单个 Go 二进制 + SQLite，是为了降低部署门槛。但代价是：
 
 - 多实例横向扩展不天然成立，尤其 SQLite 写入和内存 session。
 - 运行态配置和本地文件强绑定，需要良好备份。

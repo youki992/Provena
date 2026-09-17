@@ -40,26 +40,6 @@ knowledge_base/
 - `Cloud Security`
 - `Incident Response`
 
-## 管理流程
-
-常见流程：
-
-1. 把 Markdown 知识文件放到 `knowledge_base/`。
-2. 在 Web 知识库页面扫描目录。
-3. 重建索引。
-4. 用搜索功能验证召回效果。
-5. 在角色或任务中要求 Agent 优先查询知识库。
-
-接口入口包括：
-
-- `GET /api/knowledge/categories`
-- `GET /api/knowledge/items`
-- `POST /api/knowledge/scan`
-- `POST /api/knowledge/index`
-- `POST /api/knowledge/search`
-- `GET /api/knowledge/index-status`
-- `GET /api/knowledge/retrieval-logs`
-
 ## 索引
 
 索引配置：

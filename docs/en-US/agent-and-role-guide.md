@@ -14,17 +14,6 @@ Agent behavior is shaped by roles, Markdown sub-agents, Skills, tool visibility,
 
 Authorization boundaries belong in roles and HITL first, not only in Skills.
 
-## Modes
-
-| Mode | Good for | Poor fit |
-| --- | --- | --- |
-| `eino_single` | short tasks, interactive analysis | large multi-stage work |
-| `deep` | dynamic task decomposition | strict sequential workflows |
-| `plan_execute` | plan, execute, replan loops | frequent user interruption |
-| `supervisor` | expert routing | vague or too many sub-agents |
-
-Start with `eino_single`; use `plan_execute` for structured projects; use `deep` or `supervisor` when specialist agents matter.
-
 ## Markdown Sub-Agent
 
 Example:

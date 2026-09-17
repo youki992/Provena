@@ -34,14 +34,14 @@ Agent 调用工具
 |---|---|
 | `queued` | execution 已创建，等待 worker 或并发槽位 |
 | `running` | worker 正在执行 |
-| `background_running` | 前端展示状态，表示本轮 Agent 已停止等待，但后台仍在跑 |
+| `background_running` | 展示状态，表示本轮 Agent 已停止等待，但后台仍在跑 |
 | `completed` | 本次 tool call 本身已完成 |
 | `failed` | 工具真实失败 |
 | `cancelled` | 用户、Agent 或会话清理主动取消 |
 | `hard_timeout` | 超过硬超时，被系统终止 |
 | `orphaned` | 重启/异常后发现 DB 中仍是 running，但运行时已无对应 worker |
 
-注意：`wait_tool_execution` 到达 `timeout_seconds` 时，如果目标 execution 仍在运行，**这次 wait 调用本身是完成的观察动作**，不是工具执行失败。返回体会说明目标仍为 `running`，前端不应显示为红色失败。
+注意：`wait_tool_execution` 到达 `timeout_seconds` 时，如果目标 execution 仍在运行，**这次 wait 调用本身是完成的观察动作**，不是工具执行失败。返回体会说明目标仍为 `running`，不应显示为失败。
 
 ## 控制工具
 
@@ -116,9 +116,9 @@ multi_agent:
 | `get_tool_execution` / `wait_tool_execution` | 读取同一份 canonical result |
 | Eino `execute` / filesystem 监控记录 | 完成记录前统一兜底 |
 | 非流式 `exec` stdout/stderr | 源头 bounded buffer |
-| 流式 `exec` stdout/stderr | 推送给前端的累计输出也受上限控制 |
+| 流式 `exec` stdout/stderr | 流式累计输出也受上限控制 |
 | PTY 执行路径 | 同样受上限控制 |
-| 前端详情弹窗 | 额外有 UI 展示截断保护 |
+| 报告与终端输出 | 额外有展示截断保护 |
 
 触发上限后，完整输出先写入本地 trunc 文件，Agent 侧只保留计入预算的 `<persisted-output>` 预览（含绝对路径）。因此阈值为 50000 时，上下文文本不会超过该上限。
 
@@ -212,7 +212,7 @@ PY
 
 预期：
 
-- 初始长任务会返回 `execution_id`，状态为 `running` 或前端展示 `background_running`。
+- 初始长任务会返回 `execution_id`，状态为 `running` 或展示为 `background_running`。
 - `wait_tool_execution` 等待到上限但目标未完成时，本次 wait 调用不应显示为执行失败。
 - 大输出结果不会超过 `reduction_max_length_for_trunc`。
 - DB、监控详情、Agent 继续推理看到的是同一份兜底结果。

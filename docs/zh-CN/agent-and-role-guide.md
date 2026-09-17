@@ -28,40 +28,6 @@ Provena 的 Agent 行为由三类资源共同决定：角色、子代理和 Skil
 - 二进制分析。
 - CTF。
 
-## 单代理
-
-单代理接口：
-
-- `POST /api/eino-agent`
-- `POST /api/eino-agent/stream`
-
-适合：
-
-- 快速问答。
-- 单目标测试。
-- 工具链较短的任务。
-- 需要稳定上下文的交互式分析。
-
-## 多代理模式
-
-多代理接口：
-
-- `POST /api/multi-agent`
-- `POST /api/multi-agent/stream`
-
-编排模式：
-
-- `deep`：主代理拆解任务，按需调用子代理。
-- `plan_execute`：先规划，再执行，必要时重规划。
-- `supervisor`：主管代理根据进展转交不同子代理。
-
-适合：
-
-- 多阶段渗透测试。
-- 大范围信息收集。
-- 需要并行角色分工的分析。
-- 长任务和批量任务。
-
 ## 子代理 Markdown
 
 子代理位于 `agents/*.md`。Front matter 示例：
@@ -87,16 +53,6 @@ max_iterations: 300
 - 使用工具顺序。
 - 输出格式。
 - 禁止事项。
-
-## 主代理
-
-主代理可用：
-
-- `agents/orchestrator.md`
-- `agents/orchestrator-plan-execute.md`
-- `agents/orchestrator-supervisor.md`
-
-或在 front matter 中设置 `kind: orchestrator`。每种编排只应有一个主代理定义。
 
 ## 工具选择
 
