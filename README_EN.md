@@ -8,6 +8,10 @@
 
 [中文](README.md) | [English](README_EN.md)
 
+<div align="center">
+  <img src="images/chat.jpg" alt="A provena chat session: session banner, the /help command list, and the FGS graph printed by /graph" width="100%">
+</div>
+
 Provena turns a natural-language objective into a bounded, auditable security test against
 one authorized target. A run drives the Pi harness through a fact/intent graph: the model
 decides what to do next, Provena executes the tools, and every observation is recorded in an

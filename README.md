@@ -8,6 +8,10 @@
 
 [中文](README.md) | [English](README_EN.md)
 
+<div align="center">
+  <img src="images/chat.jpg" alt="provena chat：交互式会话，包含会话信息、/help 命令列表和 /graph 输出的 FGS 图" width="100%">
+</div>
+
 Provena 把一句自然语言目标，转化为针对单个授权目标的有界、可审计安全测试。
 
 每一次运行都会驱动 Pi harness 走一条 fact/intent 图流程：由模型决定下一步做些什么，而 Provena 则负责调用内置工具执行，每次获取的证据都会记录进只追加的FGS图中，最终生成报告。
