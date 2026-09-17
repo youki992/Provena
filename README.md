@@ -183,7 +183,7 @@ cp ffuf tools/bin/ffuf/linux-amd64/ffuf
 chmod +x tools/bin/ffuf/linux-amd64/ffuf
 ```
 
-后两个不一样：
+唯一区别：
 
 - **`nmap` 不是可以直接丢进去的单个文件。** Windows 上请正常安装 Nmap：查找器会先看`%ProgramFiles%\Nmap\nmap.exe` 和 `%ProgramFiles(x86)%\Nmap\nmap.exe`，再退回`tools/bin/nmap/windows-amd64/nmap.exe`。
 - Linux 上查找器只看`tools/bin/nmap/linux-amd64/nmap`，所以要么把二进制拷到那里，要么改配置直接调用系统安装的 nmap —— 在 `tools/nmap.yaml` 里把 `command` 改成 `"nmap"`，并去掉 `args` 中的`tools/bundled_tool.py` 相关项。
