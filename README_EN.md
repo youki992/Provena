@@ -251,8 +251,8 @@ configure one AI channel as shown in [Quick start](#quick-start). Do not commit 
 credentials — `config.yaml` and `config.*.yaml` are git-ignored.
 
 `openai` is a backward-compatible runtime field; maintain new model settings under
-`ai.channels`. See the [configuration reference](docs/en-US/configuration.md) and the
-[security hardening guide](docs/en-US/security-hardening.md).
+`ai.channels`. [`config.example.yaml`](config.example.yaml) is the authoritative reference
+and every section is commented.
 
 ## Project layout
 
@@ -275,11 +275,11 @@ servers), `data/` (run state, database, sessions) and `config.yaml`.
 
 ## Documentation
 
-- **Getting started:** [configuration](docs/en-US/configuration.md) → [troubleshooting](docs/en-US/troubleshooting.md)
-- **Architecture:** [architecture](docs/en-US/architecture.md) → [MCP federation](docs/en-US/mcp-federation.md)
-- **Security:** [security model](docs/en-US/security-model.md) → [security hardening](docs/en-US/security-hardening.md)
-- **Extending:** [skills guide](docs/en-US/skills-guide.md) → [tool execution governance](docs/en-US/tool-execution-governance.md)
-- **All topics:** [English documentation](docs/en-US/README.md) · [双语文档索引](docs/README.md)
+- [Troubleshooting](docs/en-US/troubleshooting.md)
+- [MCP federation](docs/en-US/mcp-federation.md)
+- [Knowledge base](docs/en-US/knowledge-base.md)
+- [Skills guide](docs/en-US/skills-guide.md)
+- [Bilingual documentation index](docs/README.md)
 
 ## License
 

@@ -76,11 +76,6 @@ Before pointing it at anything real:
 - never commit `data/`, `config.yaml` or `tools/bin/`;
 - install scanner binaries from their upstream releases and check what you downloaded.
 
-See:
-
-- [Security Model](docs/en-US/security-model.md)
-- [Security Hardening](docs/en-US/security-hardening.md)
-
 ---
 
 # 安全政策
@@ -148,8 +143,3 @@ Shell 执行、payload 生成、外部 MCP 工具、批量扫描等高风险能�
 - 把 `data/runs/<id>/` 当作敏感数据：报告里有目标信息和工具输出；
 - 不要提交 `data/`、`config.yaml`、`tools/bin/`；
 - 扫描器二进制从上游 Release 获取，并核对你下载的东西。
-
-参见：
-
-- [安全模型](docs/zh-CN/security-model.md)
-- [安全加固指南](docs/zh-CN/security-hardening.md)

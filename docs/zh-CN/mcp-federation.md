@@ -45,9 +45,7 @@ stdio MCP 适合本机命令启动的工具服务。
 - 进程退出会导致工具不可用。
 - 日志中查看启动失败原因。
 
-## HTTP / SSE
 
-HTTP 或 SSE MCP 适合远端或长期运行服务。
 
 关注点：
 
@@ -90,7 +88,6 @@ multi_agent:
 
 2. 检查服务日志。
 3. 单独运行 stdio 命令。
-4. 用 curl 测试 HTTP/SSE 地址。
 5. 检查工具是否被角色或 tool_search 策略隐藏。
 
 ## MCP 生命周期
@@ -98,7 +95,6 @@ multi_agent:
 外部 MCP 的生命周期不是简单的“添加 URL”：
 
 1. 注册配置：名称、类型、命令或 URL、环境变量。
-2. 启动连接：stdio 拉起进程，HTTP/SSE 建立客户端。
 3. 拉取工具列表：工具名、描述、schema 进入平台。
 4. 暴露给 Agent：受角色、tool_search、HITL 影响。
 5. 执行工具：参数校验、调用、记录监控。

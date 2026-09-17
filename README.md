@@ -225,8 +225,8 @@ Windows 上没有一条包管理器命令能覆盖它们：请逐个到各工具
 [`config.example.yaml`](config.example.yaml) 是权威配置模板。最少只需按
 [快速上手](#快速上手)配置一个 AI 通道。
 
-`openai` 是兼容旧版本的运行时字段，新配置请统一维护在 `ai.channels` 下。详见
-[配置参考](docs/zh-CN/configuration.md)与[安全加固指南](docs/zh-CN/security-hardening.md)。
+`openai` 是兼容旧版本的运行时字段，新配置请统一维护在 `ai.channels` 下。
+[`config.example.yaml`](config.example.yaml) 是最权威的配置说明，每一段都有中文注释。
 
 ## 项目结构
 
@@ -247,11 +247,12 @@ Provena/
 
 ## 相关文档
 
-- **上手：** [配置参考](docs/zh-CN/configuration.md) → [排错指南](docs/zh-CN/troubleshooting.md)
-- **架构：** [架构说明](docs/zh-CN/architecture.md) → [MCP 联邦](docs/zh-CN/mcp-federation.md)
-- **安全：** [安全模型](docs/zh-CN/security-model.md) → [安全加固](docs/zh-CN/security-hardening.md)
-- **扩展：** [Skills 指南](docs/zh-CN/skills-guide.md) → [工具执行治理](docs/zh-CN/tool-execution-governance.md)
-- **全部专题：** [中文文档](docs/zh-CN/README.md) · [双语文档索引](docs/README.md)
+- [排错指南](docs/zh-CN/troubleshooting.md)
+- [MCP 联邦](docs/zh-CN/mcp-federation.md)
+- [知识库](docs/zh-CN/knowledge-base.md)
+- [Skills 指南](docs/zh-CN/skills-guide.md)
+- [命令行运行冒烟测试](docs/zh-CN/provena-run-smoke.md)（仅中文）
+- [双语文档索引](docs/README.md)
 
 ## 许可证
 
