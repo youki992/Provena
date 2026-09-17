@@ -44,6 +44,7 @@ ARCHIVE_ROOT_DIRS=(
   roles
   tools
   docs
+  images
 )
 
 make_zip() {
