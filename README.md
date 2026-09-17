@@ -24,12 +24,12 @@ Provena 把一句自然语言目标，转化为针对单个授权目标的有界
 
 | | |
 | --- | --- |
-| **操作系统** | 64 位 Windows 或 Linux。内置扫描器启动器（`tools/bundled_tool.py`）没有 macOS 分支，它拉起的 8 个工具只在上述两个平台可用。 |
+| **操作系统** | 64 位 Windows 或 Linux。内置扫描器启动器（`tools/bundled_tool.py`）无 macOS 分支。 |
 | **Go** | 1.25 及以上（以 `go.mod` 为准） |
 | **Node.js + npm** | 用于安装并运行 Pi（见下一行） |
 | **Pi** | `pi` 命令行工具，需在 `PATH` 中。安装：`npm install -g @mariozechner/pi-coding-agent`。Provena 把它作为智能体运行时驱动（`pi --mode rpc`）；可用 `pi_agent.command` 指向其他可执行文件。 |
-| **模型** | 任意兼容 OpenAI 协议的对话接口。Provena 会把所选通道的 `provider`、`base_url`、`api_key`、`model` 交给 Pi，因此在 `ai.channels` 里配置。 |
-| **Python** | 3.10 及以上 —— Python 类配方和内置扫描器启动器都需要 |
+| **模型** | 任意兼容 OpenAI 协议的对话接口。Provena 会把所选通道的 `provider`、`base_url`、`api_key`、`model` 交给 Pi，因此在 `ai.channels` 里配置即可。 |
+| **Python** | 3.10 及以上 |
 
 `provena doctor` 会在真正跑任务前，把配置、AI 通道、pi 运行时、python、tools/skills/agents
 目录以及所有已配置的 MCP 服务器都检查一遍。
@@ -145,7 +145,7 @@ provena run -t https://example.com \
 
 ### 仓库不内置任何工具，请自行下载
 
-本仓库刻意**不携带任何第三方扫描器二进制，也没有 `tools/bin` 目录**。请到各工具自己的
+本仓库**不携带任何第三方扫描器二进制，也没有 `tools/bin` 目录**。请到各工具自己的
 上游 Release 页面下载，然后放到 Provena 约定的位置。
 
 工具的运行方式、YAML 配置格式以及如何新增自定义工具，见
@@ -154,7 +154,7 @@ provena run -t https://example.com \
 
 ### 内置扫描器 —— `tools/bin/<工具名>/<平台>/<工具名>[.exe]`
 
-下列 8 个工具由 [`tools/bundled_tool.py`](tools/bundled_tool.py) 拉起，它在**仓库内部**
+下列几个工具由 [`tools/bundled_tool.py`](tools/bundled_tool.py) 拉起，它在**仓库内部**
 解析可执行文件，而不走 `PATH`。请把二进制放到：
 
 ```
@@ -171,8 +171,7 @@ tools/bin/<工具名>/<平台>/<工具名>[.exe]
 | `gau` | `tools/gau.yaml` | `tools/bin/gau/<平台>/gau[.exe]` | `lc/gau` |
 | `katana` | `tools/katana.yaml` | `tools/bin/katana/<平台>/katana[.exe]` | `projectdiscovery/katana` |
 | `waybackurls` | `tools/waybackurls.yaml` | `tools/bin/waybackurls/<平台>/waybackurls[.exe]` | `tomnomnom/waybackurls` |
-| `nmap` | `tools/nmap.yaml` | 不是「丢一个文件进去」就完事 —— 见下文 | 自行安装 |
-| `dddd` | `tools/dddd.yaml` | `tools/bin/dddd/<平台>/dddd[.exe]` | 未公开分发 |
+| `nmap` | `tools/nmap.yaml` | 见下文 | 自行安装 |
 
 前 6 个都是常见的开源 Release：到对应项目的 Release 页面下载你的平台包，把可执行文件拷到
 上面的路径即可。以 Linux 上的 ffuf 为例：
@@ -186,22 +185,12 @@ chmod +x tools/bin/ffuf/linux-amd64/ffuf
 
 后两个不一样：
 
-- **`nmap` 不是可以直接丢进去的单个文件。** Windows 上请正常安装 Nmap：查找器会先看
-  `%ProgramFiles%\Nmap\nmap.exe` 和 `%ProgramFiles(x86)%\Nmap\nmap.exe`，再退回
-  `tools/bin/nmap/windows-amd64/nmap.exe`。Linux 上查找器只看
-  `tools/bin/nmap/linux-amd64/nmap`，所以要么把二进制拷到那里，要么改配方直接调用系统
-  安装的 nmap —— 在 `tools/nmap.yaml` 里把 `command` 改成 `"nmap"`，并去掉 `args` 中的
-  `tools/bundled_tool.py` 相关项。
-- **`dddd` 下载不到。** 它没有公开分发，所以给不出 Release 链接。Provena 会到
-  `tools/bin/dddd/<平台>/dddd[.exe]` 找它，找不到就跳过该工具 —— 除非你自己提供这个二进制。
+- **`nmap` 不是可以直接丢进去的单个文件。** Windows 上请正常安装 Nmap：查找器会先看`%ProgramFiles%\Nmap\nmap.exe` 和 `%ProgramFiles(x86)%\Nmap\nmap.exe`，再退回`tools/bin/nmap/windows-amd64/nmap.exe`。
+- Linux 上查找器只看`tools/bin/nmap/linux-amd64/nmap`，所以要么把二进制拷到那里，要么改配置直接调用系统安装的 nmap —— 在 `tools/nmap.yaml` 里把 `command` 改成 `"nmap"`，并去掉 `args` 中的`tools/bundled_tool.py` 相关项。
 
 查找顺序与例外：
 
-- **katana** —— 也接受 `tools/bin/dddd/<平台>/WIHscan-1.0/katana[.exe]`。
-- **旧版 Windows 布局** —— `tools/bin/<工具名>/<工具名>.exe` 仍然可以解析。
 - **二进制缺失** —— 运行不会失败。工具会列出它检查过的全部路径，智能体跳过该工具继续执行。
-
-`tools/bin` 与 `bin/` 都在 `.gitignore` 中，因此你下载的二进制只留在本地，不会被提交。
 
 ### Python 类工具
 
@@ -234,8 +223,7 @@ Windows 上没有一条包管理器命令能覆盖它们：请逐个到各工具
 ## 配置
 
 [`config.example.yaml`](config.example.yaml) 是权威配置模板。最少只需按
-[快速上手](#快速上手)配置一个 AI 通道。不要提交真实凭证 —— `config.yaml` 与
-`config.*.yaml` 已在 `.gitignore` 中。
+[快速上手](#快速上手)配置一个 AI 通道。
 
 `openai` 是兼容旧版本的运行时字段，新配置请统一维护在 `ai.channels` 下。详见
 [配置参考](docs/zh-CN/configuration.md)与[安全加固指南](docs/zh-CN/security-hardening.md)。
@@ -255,9 +243,7 @@ Provena/
 └── SECURITY.md
 ```
 
-以下目录由你自行准备，不属于仓库内容：`tools/bin/`（扫描器二进制）、`skills/`
-（Agent Skills）、`mcp-servers/`（外部 MCP 服务）、`data/`（运行状态、数据库、会话）以及
-`config.yaml`。
+以下目录由你自行准备，不属于仓库内容：`tools/bin/`（扫描器二进制）、`skills/`（Agent Skills）、`mcp-servers/`（外部 MCP 服务）、`data/`（运行状态、数据库、会话）以及`config.yaml`。
 
 ## 相关文档
 
@@ -266,9 +252,6 @@ Provena/
 - **安全：** [安全模型](docs/zh-CN/security-model.md) → [安全加固](docs/zh-CN/security-hardening.md)
 - **扩展：** [Skills 指南](docs/zh-CN/skills-guide.md) → [工具执行治理](docs/zh-CN/tool-execution-governance.md)
 - **全部专题：** [中文文档](docs/zh-CN/README.md) · [双语文档索引](docs/README.md)
-
-`docs/` 下部分文档是围绕此前的 Web 控制台撰写的，仍在描述本构建不具备的界面，请以其中的
-命令行章节为准。
 
 ## 许可证
 
