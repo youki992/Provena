@@ -18,6 +18,7 @@ import (
 	"github.com/chobits02/provena/internal/config"
 	"github.com/chobits02/provena/internal/fgs"
 	"github.com/chobits02/provena/internal/piagent"
+	"github.com/chobits02/provena/internal/profile"
 	"github.com/chobits02/provena/internal/project"
 )
 
@@ -468,9 +469,10 @@ func (h *AgentHandler) runPiFGSActivity(
 		BridgeToken:  bridge.Token(),
 		BridgeTools:  tools,
 	}
-	if runCfg.IsMinimalProfile() {
-		// Pi 原生只读文件工具属于 v3 基础能力；禁止 bash/edit/write。
-		piCfg.Tools = appendUniqueToolNames(piCfg.Tools, "read", "grep", "find", "ls")
+	// Some profiles opt into extra Pi-native tools. The read-only file tools are
+	// the v3 capability that stands in for a shell.
+	if extra := profile.For(runCfg.Profile).PiActivityTools; len(extra) > 0 {
+		piCfg.Tools = appendUniqueToolNames(piCfg.Tools, extra...)
 	}
 	// FGS must not load a user-editable Skill as an authorization gate. The
 	// server has already decided which tools are exposed; FGS gives Pi only the

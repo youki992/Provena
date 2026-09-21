@@ -11,15 +11,16 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/chobits02/provena/internal/profile"
 	"github.com/chobits02/provena/internal/termout"
 
 	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
-	Version string `yaml:"version,omitempty" json:"version,omitempty"` // 前端显示的版本号，如 v1.3.3
-	// Profile selects an optional capability profile. The v3-minimal profile keeps
-	// only low-impact request/search/read tooling and skips high-risk built-ins.
+	Version string `yaml:"version,omitempty" json:"version,omitempty"` // 版本号，如 v0.1.0
+	// Profile selects a capability profile; see internal/profile for the list.
+	// An empty or unknown value selects the unrestricted default.
 	Profile                string                `yaml:"profile,omitempty" json:"profile,omitempty"`
 	Server                 ServerConfig          `yaml:"server"`
 	Log                    LogConfig             `yaml:"log"`
@@ -52,13 +53,6 @@ type Config struct {
 	MultiAgent             MultiAgentConfig      `yaml:"multi_agent,omitempty" json:"multi_agent,omitempty"`
 	Project                ProjectConfig         `yaml:"project,omitempty" json:"project,omitempty"`
 	Vision                 VisionConfig          `yaml:"vision,omitempty" json:"vision,omitempty"`
-}
-
-// IsMinimalProfile reports whether the reduced v3 capability profile is active.
-// Empty/unknown profiles preserve the legacy registration behavior.
-func (c Config) IsMinimalProfile() bool {
-	return strings.EqualFold(strings.TrimSpace(c.Profile), "v3-minimal") ||
-		strings.EqualFold(strings.TrimSpace(c.Profile), "minimal")
 }
 
 // PacketCaptureConfig configures the loopback HTTP/HTTPS interception proxy.
@@ -1652,7 +1646,7 @@ func Load(path string) (*Config, error) {
 		if err != nil {
 			return nil, fmt.Errorf("从工具目录加载工具配置失败: %w", err)
 		}
-		cfg.Security.Tools = merged
+		cfg.Security.Tools = filterToolsForProfile(profile.For(cfg.Profile), merged)
 	}
 
 	// 外部 MCP：迁移 + 环境变量展开
@@ -1964,8 +1958,29 @@ func ReloadSecurityToolsFromDir(cfg *Config, configPath string) error {
 	if err != nil {
 		return fmt.Errorf("从工具目录加载工具配置失败: %w", err)
 	}
-	cfg.Security.Tools = merged
+	cfg.Security.Tools = filterToolsForProfile(profile.For(cfg.Profile), merged)
 	return nil
+}
+
+// filterToolsForProfile drops recipes the active capability profile does not
+// allow. The default profile allows everything, so this is a no-op unless the
+// profile declares a tool allowlist. Skips are summarised in one line rather
+// than one line per recipe, because a restrictive profile drops most of them.
+func filterToolsForProfile(prof profile.Profile, tools []ToolConfig) []ToolConfig {
+	if !prof.RestrictsTools() {
+		return tools
+	}
+	kept := make([]ToolConfig, 0, len(tools))
+	for _, tool := range tools {
+		if prof.AllowsTool(tool.Name) {
+			kept = append(kept, tool)
+		}
+	}
+	if dropped := len(tools) - len(kept); dropped > 0 {
+		fmt.Printf("profile %s：注册 %d 个工具配方，跳过 %d 个不在白名单内的配方\n",
+			prof.Name, len(kept), dropped)
+	}
+	return kept
 }
 
 // LoadToolsFromDir 从目录加载所有工具配置文件

@@ -12,6 +12,7 @@ import (
 	"github.com/chobits02/provena/internal/fgs"
 	"github.com/chobits02/provena/internal/mcp/builtin"
 	"github.com/chobits02/provena/internal/piagent"
+	"github.com/chobits02/provena/internal/profile"
 )
 
 func fgsReadTool() piagent.BridgeTool {
@@ -380,17 +381,14 @@ func (h *AgentHandler) piPlaybookRoot() string {
 	if err != nil {
 		return ""
 	}
-	if h.config != nil && h.config.IsMinimalProfile() {
-		skillsDir := strings.TrimSpace(h.config.SkillsDir)
-		if skillsDir == "" {
-			skillsDir = "skills-v3"
-		}
-		if !filepath.IsAbs(skillsDir) {
-			skillsDir = filepath.Join(cwd, skillsDir)
-		}
-		return filepath.Join(skillsDir, "src-6k-skill", "知识库")
+	// A handler without a config behaves like the unrestricted profile.
+	prof := profile.For("")
+	skillsDir := ""
+	if h.config != nil {
+		prof = profile.For(h.config.Profile)
+		skillsDir = h.config.SkillsDir
 	}
-	return filepath.Join(cwd, "skills", "src-hunter", "references", "playbooks")
+	return prof.PlaybookDir(skillsDir, cwd)
 }
 
 // filterFGSWorldTools keeps the Harness boundary generic: platform tools that

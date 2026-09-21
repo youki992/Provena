@@ -2,6 +2,7 @@ package config
 
 import (
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -21,7 +22,16 @@ func TestReleaseTemplateKeepsPortableDefaults(t *testing.T) {
 	if !cfg.PiAgent.Enabled {
 		t.Fatal("release template must enable Pi Agent")
 	}
-	if cfg.Server.Port != 8080 {
-		t.Fatalf("release template server port = %d, want 8080", cfg.Server.Port)
+	// The template is CLI-only now: it no longer carries a server section, so
+	// assert the defaults a command-line run depends on instead.
+	if cfg.Server.Port != 0 || cfg.Server.Host != "" {
+		t.Fatalf("release template must not configure a web server, got host=%q port=%d",
+			cfg.Server.Host, cfg.Server.Port)
+	}
+	if strings.TrimSpace(cfg.Security.ToolsDir) == "" {
+		t.Fatal("release template must point at a tool recipe directory")
+	}
+	if strings.TrimSpace(cfg.AI.DefaultChannel) == "" {
+		t.Fatal("release template must select a default AI channel")
 	}
 }

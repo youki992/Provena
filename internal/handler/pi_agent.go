@@ -21,6 +21,7 @@ import (
 	"github.com/chobits02/provena/internal/authctx"
 	"github.com/chobits02/provena/internal/multiagent"
 	"github.com/chobits02/provena/internal/piagent"
+	"github.com/chobits02/provena/internal/profile"
 	"github.com/chobits02/provena/internal/project"
 
 	"github.com/gin-gonic/gin"
@@ -323,18 +324,19 @@ func (h *AgentHandler) PiSingleAgentLoopStream(c *gin.Context) {
 		NoSession:      true,
 		Tools:          piActiveToolNames(runCfg.PiAgent.Tools, bridgeTools),
 		NoContextFiles: runCfg.PiAgent.NoContextFiles,
-		// Legacy profiles keep Pi stateless and skill-free. v3-minimal below
-		// explicitly opts into the single bundled src-6k-skill path.
+		// Pi is stateless and skill-free unless the active profile opts a skill
+		// in; see the block after this literal.
 		NoSkills:          true,
 		NoPromptTemplates: true,
 		NoExtensions:      true,
 		APIKey:            runCfg.OpenAI.APIKey,
 		BaseURL:           runCfg.OpenAI.BaseURL,
 	}
-	if runCfg.IsMinimalProfile() && worldTask {
-		skillRoot := piSkillsRoot(runCfg.SkillsDir)
-		skillPath := filepath.Join(skillRoot, "src-6k-skill", "SKILL.md")
-		if _, statErr := os.Stat(skillPath); statErr == nil {
+	// Skill loading is a profile capability rather than a special case for one
+	// profile name: the profile lists the skills a run may load and the first
+	// one actually installed wins. Every other profile stays skill-free.
+	if worldTask {
+		if skillPath := profile.For(runCfg.Profile).SkillPath(piSkillsRoot(runCfg.SkillsDir)); skillPath != "" {
 			piCfg.NoSkills = false
 			piCfg.SkillPaths = []string{skillPath}
 		}
