@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -81,6 +82,12 @@ func buildMarkdown(res Result, snapshot fgs.Snapshot, vulns []*database.Vulnerab
 	fmt.Fprintf(&b, "| Findings (evidence-backed, unconfirmed) | %d |\n", len(findings))
 	fmt.Fprintf(&b, "| Recorded vulnerabilities | %d |\n\n", len(vulns))
 
+	if breakdown := confidenceBreakdown(vulns); breakdown != "" {
+		b.WriteString("### By confidence\n\n")
+		b.WriteString(breakdown)
+		b.WriteString("\n")
+	}
+
 	b.WriteString("> Findings are evidence-backed observations that were not necessarily confirmed as\n")
 	b.WriteString("> exploitable issues. Recorded vulnerabilities come from the platform's structured\n")
 	b.WriteString("> vulnerability store and carry an explicit severity.\n\n")
@@ -108,6 +115,15 @@ func buildMarkdown(res Result, snapshot fgs.Snapshot, vulns []*database.Vulnerab
 		for i, vuln := range vulns {
 			fmt.Fprintf(&b, "### %d. %s\n\n", i+1, firstNonEmptyString(vuln.Title, vuln.ID))
 			fmt.Fprintf(&b, "- Severity: %s\n- Status: %s\n", firstNonEmptyString(vuln.Severity, "unknown"), vuln.Status)
+			if location := vulnLocation(vuln); location != "" {
+				fmt.Fprintf(&b, "- Location: `%s`\n", location)
+			}
+			if cwe := strings.TrimSpace(vuln.CWEID); cwe != "" {
+				fmt.Fprintf(&b, "- CWE: %s\n", cwe)
+			}
+			if conf := strings.TrimSpace(vuln.Confidence); conf != "" {
+				fmt.Fprintf(&b, "- Confidence: %s\n", conf)
+			}
 			if strings.TrimSpace(vuln.Target) != "" {
 				fmt.Fprintf(&b, "- Target: %s\n", vuln.Target)
 			}
@@ -116,6 +132,7 @@ func buildMarkdown(res Result, snapshot fgs.Snapshot, vulns []*database.Vulnerab
 				{"Description", vuln.Description},
 				{"Preconditions", vuln.Preconditions},
 				{"Reproduction", vuln.ReproSteps},
+				{"Data flow", vuln.CodeFlow},
 				{"Evidence", vuln.Evidence},
 				{"Impact", vuln.Impact},
 				{"Recommendation", vuln.Recommendation},
@@ -150,25 +167,42 @@ func buildSARIF(res Result, snapshot fgs.Snapshot, vulns []*database.Vulnerabili
 	type sarifMessage struct {
 		Text string `json:"text"`
 	}
+	type sarifRegion struct {
+		StartLine int           `json:"startLine,omitempty"`
+		EndLine   int           `json:"endLine,omitempty"`
+		Snippet   *sarifMessage `json:"snippet,omitempty"`
+	}
 	type sarifArtifactLocation struct {
 		URI string `json:"uri"`
 	}
 	type sarifPhysicalLocation struct {
 		ArtifactLocation sarifArtifactLocation `json:"artifactLocation"`
+		Region           *sarifRegion          `json:"region,omitempty"`
 	}
 	type sarifLocation struct {
 		PhysicalLocation sarifPhysicalLocation `json:"physicalLocation"`
 	}
+	type sarifThreadFlowLocation struct {
+		Location sarifLocation `json:"location"`
+	}
+	type sarifThreadFlow struct {
+		Locations []sarifThreadFlowLocation `json:"locations"`
+	}
+	type sarifCodeFlow struct {
+		ThreadFlows []sarifThreadFlow `json:"threadFlows"`
+	}
 	type sarifRule struct {
-		ID               string       `json:"id"`
-		Name             string       `json:"name,omitempty"`
-		ShortDescription sarifMessage `json:"shortDescription"`
+		ID               string         `json:"id"`
+		Name             string         `json:"name,omitempty"`
+		ShortDescription sarifMessage   `json:"shortDescription"`
+		Properties       map[string]any `json:"properties,omitempty"`
 	}
 	type sarifResult struct {
 		RuleID    string          `json:"ruleId"`
 		Level     string          `json:"level"`
 		Message   sarifMessage    `json:"message"`
 		Locations []sarifLocation `json:"locations,omitempty"`
+		CodeFlows []sarifCodeFlow `json:"codeFlows,omitempty"`
 		Props     map[string]any  `json:"properties,omitempty"`
 	}
 	type sarifDriver struct {
@@ -194,7 +228,7 @@ func buildSARIF(res Result, snapshot fgs.Snapshot, vulns []*database.Vulnerabili
 	results := make([]sarifResult, 0)
 	seenRule := make(map[string]struct{})
 
-	addRule := func(id, name, description string) {
+	addRule := func(id, name, description string, props map[string]any) {
 		if _, ok := seenRule[id]; ok {
 			return
 		}
@@ -203,28 +237,53 @@ func buildSARIF(res Result, snapshot fgs.Snapshot, vulns []*database.Vulnerabili
 			ID:               id,
 			Name:             name,
 			ShortDescription: sarifMessage{Text: description},
+			Properties:       props,
 		})
 	}
 
-	location := func(target string) []sarifLocation {
-		if strings.TrimSpace(target) == "" {
+	// locationAt carries the code region when line numbers are known, which is
+	// what a code-scanning consumer needs in order to annotate the right line.
+	locationAt := func(path string, startLine, endLine int, snippet string) []sarifLocation {
+		if strings.TrimSpace(path) == "" {
 			return nil
 		}
-		return []sarifLocation{{
-			PhysicalLocation: sarifPhysicalLocation{
-				ArtifactLocation: sarifArtifactLocation{URI: target},
-			},
-		}}
+		physical := sarifPhysicalLocation{ArtifactLocation: sarifArtifactLocation{URI: path}}
+		if startLine > 0 {
+			region := &sarifRegion{StartLine: startLine, EndLine: endLine}
+			if strings.TrimSpace(snippet) != "" {
+				region.Snippet = &sarifMessage{Text: snippet}
+			}
+			physical.Region = region
+		}
+		return []sarifLocation{{PhysicalLocation: physical}}
+	}
+
+	// parseCodeFlow maps the stored "file:line" entries onto SARIF thread flows,
+	// which is the format code-scanning UIs render as an attack path.
+	parseCodeFlow := func(raw string) []sarifCodeFlow {
+		steps := make([]sarifThreadFlowLocation, 0)
+		for _, entry := range strings.Split(raw, "\n") {
+			path, startLine, endLine := parseCodeFlowStep(entry)
+			locs := locationAt(path, startLine, endLine, "")
+			if len(locs) == 0 {
+				continue
+			}
+			steps = append(steps, sarifThreadFlowLocation{Location: locs[0]})
+		}
+		if len(steps) == 0 {
+			return nil
+		}
+		return []sarifCodeFlow{{ThreadFlows: []sarifThreadFlow{{Locations: steps}}}}
 	}
 
 	for _, node := range findingsOf(snapshot) {
 		ruleID := "provena/finding/" + slugify(firstNonEmptyString(node.Label, node.ID))
-		addRule(ruleID, node.Label, oneLineSummary(node.Content, 200))
+		addRule(ruleID, node.Label, oneLineSummary(node.Content, 200), nil)
 		results = append(results, sarifResult{
 			RuleID:    ruleID,
 			Level:     "warning",
 			Message:   sarifMessage{Text: firstNonEmptyString(node.Content, node.Label, node.ID)},
-			Locations: location(res.Target),
+			Locations: locationAt(res.Target, 0, 0, ""),
 			Props: map[string]any{
 				"nodeId":   node.ID,
 				"status":   string(node.Status),
@@ -234,19 +293,41 @@ func buildSARIF(res Result, snapshot fgs.Snapshot, vulns []*database.Vulnerabili
 	}
 
 	for _, vuln := range vulns {
-		ruleID := "provena/vulnerability/" + slugify(firstNonEmptyString(vuln.Type, vuln.Title, vuln.ID))
-		addRule(ruleID, vuln.Title, oneLineSummary(vuln.Description, 200))
+		// An audit finding keeps the rule that produced it, so a consumer can
+		// correlate with (or suppress) the original SAST rule.
+		ruleID := firstNonEmptyString(vuln.RuleID,
+			"provena/vulnerability/"+slugify(firstNonEmptyString(vuln.Type, vuln.Title, vuln.ID)))
+		ruleProps := map[string]any{}
+		if cwe := strings.TrimSpace(vuln.CWEID); cwe != "" {
+			ruleProps["cwe"] = cwe
+		}
+		if conf := strings.TrimSpace(vuln.Confidence); conf != "" {
+			ruleProps["confidence"] = conf
+		}
+		if len(ruleProps) == 0 {
+			ruleProps = nil
+		}
+		addRule(ruleID, vuln.Title, oneLineSummary(vuln.Description, 200), ruleProps)
+
+		props := map[string]any{
+			"vulnerabilityId": vuln.ID,
+			"severity":        vuln.Severity,
+			"status":          vuln.Status,
+			"evidence":        vuln.Evidence,
+		}
+		if cwe := strings.TrimSpace(vuln.CWEID); cwe != "" {
+			props["cwe"] = cwe
+		}
+		if conf := strings.TrimSpace(vuln.Confidence); conf != "" {
+			props["confidence"] = conf
+		}
 		results = append(results, sarifResult{
 			RuleID:    ruleID,
 			Level:     sarifLevel(vuln.Severity),
 			Message:   sarifMessage{Text: firstNonEmptyString(vuln.Description, vuln.Title, vuln.ID)},
-			Locations: location(firstNonEmptyString(vuln.Target, res.Target)),
-			Props: map[string]any{
-				"vulnerabilityId": vuln.ID,
-				"severity":        vuln.Severity,
-				"status":          vuln.Status,
-				"evidence":        vuln.Evidence,
-			},
+			Locations: locationAt(firstNonEmptyString(vuln.FilePath, vuln.Target, res.Target), vuln.StartLine, vuln.EndLine, vuln.CodeSnippet),
+			CodeFlows: parseCodeFlow(vuln.CodeFlow),
+			Props:     props,
 		})
 	}
 
@@ -269,23 +350,102 @@ func buildSARIF(res Result, snapshot fgs.Snapshot, vulns []*database.Vulnerabili
 func buildJSON(res Result, snapshot fgs.Snapshot, vulns []*database.Vulnerability) ([]byte, error) {
 	payload := map[string]any{
 		"run": map[string]any{
-			"id":         res.RunID,
-			"target":     res.Target,
-			"objective":  res.Objective,
-			"scope":      res.Scope,
-			"status":     res.Status,
-			"activities": res.Activities,
-			"startedAt":  res.StartedAt,
-			"endedAt":    res.EndedAt,
-			"graphPath":  res.GraphPath,
+			"id":             res.RunID,
+			"target":         res.Target,
+			"objective":      res.Objective,
+			"scope":          res.Scope,
+			"status":         res.Status,
+			"activities":     res.Activities,
+			"startedAt":      res.StartedAt,
+			"endedAt":        res.EndedAt,
+			"graphPath":      res.GraphPath,
 			"conversationId": res.ConversationID,
 		},
-		"graph":      snapshot,
-		"findings":   findingsOf(snapshot),
-		"facts":      factsOf(snapshot),
+		"graph":           snapshot,
+		"findings":        findingsOf(snapshot),
+		"facts":           factsOf(snapshot),
 		"vulnerabilities": vulns,
 	}
 	return json.MarshalIndent(payload, "", "  ")
+}
+
+// vulnLocation renders an audit finding's code location, e.g. "src/A.java:42-45".
+// Records without a file (the pentest case) return "".
+func vulnLocation(vuln *database.Vulnerability) string {
+	path := strings.TrimSpace(vuln.FilePath)
+	if path == "" {
+		return ""
+	}
+	if vuln.StartLine <= 0 {
+		return path
+	}
+	if vuln.EndLine > vuln.StartLine {
+		return fmt.Sprintf("%s:%d-%d", path, vuln.StartLine, vuln.EndLine)
+	}
+	return fmt.Sprintf("%s:%d", path, vuln.StartLine)
+}
+
+// confidenceBreakdown summarises audit results by confidence tier, strongest
+// first, so a reader can tell "already proven" from "a scanner said so".
+// It returns "" when no record carries a tier, which is the pentest case.
+func confidenceBreakdown(vulns []*database.Vulnerability) string {
+	order := []string{
+		database.ConfidenceDynamicallyConfirmed,
+		database.ConfidenceDataflowReachable,
+		database.ConfidenceHeuristic,
+		database.ConfidenceToolReported,
+	}
+	counts := make(map[string]int, len(order))
+	unlabelled := 0
+	for _, vuln := range vulns {
+		if conf := strings.TrimSpace(vuln.Confidence); conf != "" {
+			counts[conf]++
+			continue
+		}
+		unlabelled++
+	}
+	if len(counts) == 0 {
+		return ""
+	}
+	var b strings.Builder
+	b.WriteString("| Confidence | Count |\n| --- | --- |\n")
+	for _, tier := range order {
+		if counts[tier] > 0 {
+			fmt.Fprintf(&b, "| %s | %d |\n", tier, counts[tier])
+		}
+	}
+	if unlabelled > 0 {
+		fmt.Fprintf(&b, "| (unlabelled) | %d |\n", unlabelled)
+	}
+	return b.String()
+}
+
+// parseCodeFlowStep splits one stored data-flow step into a path and a line
+// range. Accepted forms: "path", "path:42", "path:42-45". The split happens on
+// the LAST colon so Windows drive letters survive.
+func parseCodeFlowStep(entry string) (string, int, int) {
+	entry = strings.TrimSpace(entry)
+	idx := strings.LastIndex(entry, ":")
+	if idx <= 0 {
+		return entry, 0, 0
+	}
+	path := strings.TrimSpace(entry[:idx])
+	spec := strings.TrimSpace(entry[idx+1:])
+	if path == "" || spec == "" {
+		return entry, 0, 0
+	}
+	if dash := strings.Index(spec, "-"); dash > 0 {
+		start, startErr := strconv.Atoi(strings.TrimSpace(spec[:dash]))
+		end, endErr := strconv.Atoi(strings.TrimSpace(spec[dash+1:]))
+		if startErr == nil && endErr == nil {
+			return path, start, end
+		}
+		return entry, 0, 0
+	}
+	if line, err := strconv.Atoi(spec); err == nil {
+		return path, line, line
+	}
+	return entry, 0, 0
 }
 
 func sarifLevel(severity string) string {

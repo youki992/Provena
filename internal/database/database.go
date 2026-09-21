@@ -1027,6 +1027,9 @@ func (db *DB) initTables() error {
 	if err := db.migrateProjectsTable(); err != nil {
 		db.logger.Warn("迁移projects相关表失败", zap.Error(err))
 	}
+	if err := db.migrateVulnerabilityAuditFields(); err != nil {
+		db.logger.Warn("迁移漏洞审计字段失败", zap.Error(err))
+	}
 	if err := db.dropProjectFactVersionsTable(); err != nil {
 		db.logger.Warn("清理project_fact_versions表失败", zap.Error(err))
 	}
@@ -1515,16 +1518,16 @@ func (db *DB) migrateBatchTaskQueuesTable() error {
 	return nil
 }
 
-// migrateProjectsTable 迁移 projects / conversations / vulnerabilities 的项目关联字段。
-func (db *DB) migrateProjectsTable() error {
-	for _, col := range []struct {
-		table string
-		name  string
-		stmt  string
-	}{
-		{"conversations", "project_id", "ALTER TABLE conversations ADD COLUMN project_id TEXT REFERENCES projects(id) ON DELETE SET NULL"},
-		{"vulnerabilities", "project_id", "ALTER TABLE vulnerabilities ADD COLUMN project_id TEXT"},
-	} {
+// columnSpec 描述一个幂等新增的列。
+type columnSpec struct {
+	table string
+	name  string
+	stmt  string
+}
+
+// addMissingColumns 逐列先查存在性再新增，重复执行安全。
+func (db *DB) addMissingColumns(cols []columnSpec) {
+	for _, col := range cols {
 		var count int
 		err := db.QueryRow("SELECT COUNT(*) FROM pragma_table_info(?) WHERE name=?", col.table, col.name).Scan(&count)
 		if err != nil {
@@ -1542,6 +1545,30 @@ func (db *DB) migrateProjectsTable() error {
 			}
 		}
 	}
+}
+
+// migrateProjectsTable 迁移 projects / conversations / vulnerabilities 的项目关联字段。
+func (db *DB) migrateProjectsTable() error {
+	db.addMissingColumns([]columnSpec{
+		{"conversations", "project_id", "ALTER TABLE conversations ADD COLUMN project_id TEXT REFERENCES projects(id) ON DELETE SET NULL"},
+		{"vulnerabilities", "project_id", "ALTER TABLE vulnerabilities ADD COLUMN project_id TEXT"},
+	})
+	return nil
+}
+
+// migrateVulnerabilityAuditFields 为代码审计结果补充定位、编号与置信度字段。
+// 全部可空，因此渗透测试写入的旧记录完全不受影响。
+func (db *DB) migrateVulnerabilityAuditFields() error {
+	db.addMissingColumns([]columnSpec{
+		{"vulnerabilities", "cwe_id", "ALTER TABLE vulnerabilities ADD COLUMN cwe_id TEXT"},
+		{"vulnerabilities", "file_path", "ALTER TABLE vulnerabilities ADD COLUMN file_path TEXT"},
+		{"vulnerabilities", "start_line", "ALTER TABLE vulnerabilities ADD COLUMN start_line INTEGER"},
+		{"vulnerabilities", "end_line", "ALTER TABLE vulnerabilities ADD COLUMN end_line INTEGER"},
+		{"vulnerabilities", "code_snippet", "ALTER TABLE vulnerabilities ADD COLUMN code_snippet TEXT"},
+		{"vulnerabilities", "code_flow", "ALTER TABLE vulnerabilities ADD COLUMN code_flow TEXT"},
+		{"vulnerabilities", "rule_id", "ALTER TABLE vulnerabilities ADD COLUMN rule_id TEXT"},
+		{"vulnerabilities", "confidence", "ALTER TABLE vulnerabilities ADD COLUMN confidence TEXT"},
+	})
 	return nil
 }
 
